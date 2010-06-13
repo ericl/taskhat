@@ -13,6 +13,74 @@ def dateformatter(column, renderer, model, iter):
    pyobj = model.get_value(iter, 4)
    renderer.set_property('text', str(pyobj).split()[0])
 
+def parse_date(text):
+   x = None
+   out = '<?>'
+   try:
+      x = text.split()[-1]
+   except:
+      return '<?>', text
+   x = x.lower()
+   found = True
+   if x.startswith('mon'):
+      out = 'Monday'
+   elif x.startswith('tue'):
+      out = 'Tuesday'
+   elif x.startswith('wed'):
+      out = 'Wednesday'
+   elif x.startswith('thu'):
+      out = 'Thursday'
+   elif x.startswith('fri'):
+      out = 'Friday'
+   elif x.startswith('sat'):
+      out = 'Saturday'
+   elif x.startswith('sun'):
+      out = 'Sunday'
+   elif x.startswith('tod'):
+      out = 'today'
+   elif x.startswith('tom'):
+      out = 'tomorrow'
+   else:
+      found = False
+   if found:
+      text = ' '.join(text.split()[:-1])
+   return out, text
+
+def derive_label(text):
+   ttype = '<?>'
+   parse = False
+   verb = 'due'
+   if text.endswith('!'):
+      ttype = 'Important task'
+   elif text.endswith('='):
+      ttype = 'Normal task'
+   elif text.endswith('-'):
+      ttype = 'Idle task'
+   elif text.endswith('*'):
+      ttype = 'Administrivia'
+   else:
+      parse = True
+   if parse:
+      text = ' ' + text + ' '
+      if ' hw ' in text or ' homework ' in text:
+         ttype = 'Homework'
+      if ' proj' in text:
+         ttype = 'Project'
+      if ' read ' in text:
+         ttype = 'Reading'
+      if ' final ' in text or ' midterm ' in text or ' study ' in text or ' exam ' in text:
+         ttype = 'Exam'
+         verb = 'on'
+      if ' quiz ' in text:
+         ttype = 'Quiz'
+         verb = 'on'
+      if ' turn in ' in text:
+         ttype = 'Administrivia'
+   else:
+      text = text[:-1]
+   date, text = parse_date(text)
+   return ((" %s %s %s" % (ttype, verb, date)), text.strip())
+
 class TaskGroup(gtk.VBox):
    def __init__(self, name, style):
       super(gtk.VBox, self).__init__()
@@ -67,6 +135,8 @@ class TaskGroup(gtk.VBox):
       dates.set_cell_data_func(renderer, dateformatter)
 
       notes = gtk.TreeViewColumn("Notes", cell4)
+      notes.pack_end(cells, True)
+      notes.set_min_width(40)
       self.tree_view.append_column(checkbox)
       self.tree_view.append_column(prio)
       self.tree_view.append_column(column)
@@ -177,9 +247,10 @@ class GTasks:
       return model[active][0]
 
    def entry_changed(self, widget, data=None):
-      if self.validate_entry_text(widget.get_text()):
+      text = self.validate_entry_text(widget.get_text())
+      if text:
          self.abutton.set_sensitive(True)
-         self.status.set_label(" New <type>[ due <date>]")
+         self.status.set_label(derive_label(text)[0])
       else:
          self.abutton.set_sensitive(False)
          self.status.set_label(" --")
@@ -187,7 +258,7 @@ class GTasks:
    def entry_done(self, widget, data=None):
       if not data:
          data = 'All'
-      text = self.validate_entry_text(self.entry.get_text())
+      text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
       if text:
          self.group_of_entry(text).add('%s: %s' % (data, text))
          self.entry.set_text('')
