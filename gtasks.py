@@ -59,6 +59,8 @@ class GTasks:
       label.show()
 
       abutton = self.abutton = gtk.MenuToolButton(abox, "Add")
+      menu = self.menu = gtk.Menu()
+      abutton.set_menu(menu)
       abutton.set_sensitive(False)
       abutton.connect('clicked', self.entry_done)
       abutton.show()
@@ -69,10 +71,17 @@ class GTasks:
       entry.set_width_chars(25)
       entry.show()
 
-      combo = gtk.ComboBox()
-      renderer = gtk.CellRendererText()
-      combo.pack_start(renderer, True)
+      combo = self.combo = gtk.combo_box_new_text()
+      self.add_category('All')
+      self.add_category('Work')
+      self.add_category('Home')
+      combo.set_active(0)
       combo.show()
+
+      item_new = self.item_new = gtk.MenuItem('New Category...')
+      item_new.connect('activate', self.new_category_add)
+      item_new.show()
+      menu.add(item_new)
 
       scrolled_window = gtk.ScrolledWindow()
       scrolled_window.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -105,6 +114,22 @@ class GTasks:
       box2.show()
       box1.show()
       self.window.show()
+      entry.grab_focus()
+
+   def new_category_add(self, widget):
+      name = 'UNIMPLEMENTED'
+      if name:
+         self.menu.remove(self.item_new)
+         self.add_category(name)
+         self.menu.add(self.item_new)
+         self.entry_done(widget, name)
+
+   def add_category(self, name):
+      self.combo.append_text(name)
+      item = gtk.MenuItem(name)
+      item.show()
+      item.connect('activate', self.entry_done, name)
+      self.menu.add(item)
 
    def validate_entry_text(self, contents):
       return contents.strip()
@@ -114,6 +139,13 @@ class GTasks:
       self.i += 1
       return self.groups[self.i % len(self.groups)]
 
+   def get_active_text(self, combobox):
+      model = combobox.get_model()
+      active = combobox.get_active()
+      if active < 0:
+         return None
+      return model[active][0]
+
    def entry_changed(self, widget, data=None):
       if self.validate_entry_text(widget.get_text()):
          self.abutton.set_sensitive(True)
@@ -121,9 +153,11 @@ class GTasks:
          self.abutton.set_sensitive(False)
 
    def entry_done(self, widget, data=None):
+      if not data:
+         data = self.get_active_text(self.combo)
       text = self.validate_entry_text(self.entry.get_text())
       if text:
-         self.group_of_entry(text).add(text)
+         self.group_of_entry(text).add('%s: %s' % (data, text))
          self.entry.set_text('')
 
    def main(self):
