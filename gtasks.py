@@ -3,8 +3,38 @@
 import pygtk
 pygtk.require('2.0')
 
-import gtk
-import gobject
+import gtk, gobject, pango
+
+class TaskGroup(gtk.VBox):
+   def __init__(self, name, style):
+      super(gtk.VBox, self).__init__()
+      self.model = gtk.ListStore(gobject.TYPE_STRING)
+      self.tree_view = gtk.TreeView(self.model)
+      self.ebox = gtk.EventBox()
+      self.label = gtk.Label(name)
+
+      self.ebox.add(self.label)
+      # TODO proper styling that changes with gconf changes
+      self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
+      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
+      self.label.modify_font(pango.FontDescription('Sans Bold 15'))
+      self.label.set_alignment(0,0)
+      self.label.set_padding(3,3)
+      self.pack_start(self.ebox, False, False)
+      self.pack_start(self.tree_view, False, False)
+      self.tree_view.set_headers_visible(False)
+
+      cell = gtk.CellRendererText()
+      column = gtk.TreeViewColumn("Tasks", cell, text=0)
+      self.tree_view.append_column(column)
+
+      self.tree_view.show()
+      self.ebox.show()
+      self.show()
+
+   def add(self, text):
+      self.label.show()
+      self.model.set(self.model.append(), 0, text)
 
 class GTasks:
    def __init__(self):
@@ -12,6 +42,7 @@ class GTasks:
       self.window.connect('destroy', self.destroy)
       self.window.set_title('GTasks')
       self.window.set_icon_name('stock_task')
+      self.window.realize()
 
       box1 = gtk.VBox()
       box2 = gtk.HBox()
@@ -45,16 +76,22 @@ class GTasks:
 
       scrolled_window = gtk.ScrolledWindow()
       scrolled_window.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
-      model = self.model = gtk.ListStore(gobject.TYPE_STRING)
-      tree_view = gtk.TreeView(model)
-      scrolled_window.add_with_viewport(tree_view)
-      tree_view.set_headers_visible(False)
-      tree_view.show()
       scrolled_window.show()
-      cell = gtk.CellRendererText()
+      box3 = gtk.VBox()
+      box3.show()
+      ebox3 = gtk.EventBox()
+      ebox3.add(box3)
+      ebox3.show()
+      scrolled_window.add_with_viewport(ebox3)
 
-      column = gtk.TreeViewColumn("Tasks", cell, text=0)
-      tree_view.append_column(column)
+      today = TaskGroup("Today", self.window.get_style())
+      tomorrow = TaskGroup("Tomorrow", self.window.get_style())
+      future = TaskGroup("Future", self.window.get_style())
+      self.groups = [today, tomorrow, future]
+      for group in self.groups:
+         box3.pack_start(group, False, False)
+
+      ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
       box2.pack_start(combo, False, False)
       box2.pack_end(abutton, False, False)
@@ -69,16 +106,25 @@ class GTasks:
       box1.show()
       self.window.show()
 
+   def validate_entry_text(self, contents):
+      return contents.strip()
+
+   i = 0
+   def group_of_entry(self, entry):
+      self.i += 1
+      return self.groups[self.i % len(self.groups)]
+
    def entry_changed(self, widget, data=None):
-      if widget.get_text():
+      if self.validate_entry_text(widget.get_text()):
          self.abutton.set_sensitive(True)
       else:
          self.abutton.set_sensitive(False)
 
    def entry_done(self, widget, data=None):
-      iter = self.model.append()
-      self.model.set(iter, 0, self.entry.get_text())
-      self.entry.set_text('')
+      text = self.validate_entry_text(self.entry.get_text())
+      if text:
+         self.group_of_entry(text).add(text)
+         self.entry.set_text('')
 
    def main(self):
       gtk.main()
