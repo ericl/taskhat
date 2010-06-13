@@ -9,6 +9,11 @@ import pango
 
 from datetime import datetime
 
+from task import Task
+from persist import Persist
+
+HELP_STRING = ' Create a new task:'
+
 def dateformatter(column, renderer, model, iter):
    pyobj = model.get_value(iter, 4)
    renderer.set_property('text', str(pyobj).split()[0])
@@ -153,9 +158,10 @@ class TaskGroup(gtk.VBox):
 
 class GTasks:
    def __init__(self):
+      self.persist = Persist('Default')
       self.window = gtk.Window()
       self.window.connect('destroy', self.destroy)
-      self.window.set_title('GTasks')
+      self.window.set_title('Task List')
       self.window.set_icon_name('stock_task')
       self.window.realize()
 
@@ -208,7 +214,7 @@ class GTasks:
 
       ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
-      status = self.status = gtk.Label(' --')
+      status = self.status = gtk.Label(HELP_STRING)
       status.show()
       status.set_sensitive(False)
       box2.pack_start(status, False, False)
@@ -222,6 +228,8 @@ class GTasks:
 
       box2.show()
       box1.show()
+
+      self.persist.restore(self.insert_task)
       self.window.show()
       entry.grab_focus()
 
@@ -253,14 +261,19 @@ class GTasks:
          self.status.set_label(derive_label(text)[0])
       else:
          self.abutton.set_sensitive(False)
-         self.status.set_label(" --")
+         self.status.set_label(HELP_STRING)
+
+   def insert_task(self, task):
+      self.group_of_entry(task.text).add('%s: %s' % (task.category, task.text))
 
    def entry_done(self, widget, data=None):
       if not data:
          data = 'All'
       text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
       if text:
-         self.group_of_entry(text).add('%s: %s' % (data, text))
+         task = Task(data, text)
+         self.insert_task(task)
+         self.persist.save(task)
          self.entry.set_text('')
 
    def main(self):
@@ -268,9 +281,5 @@ class GTasks:
   
    def destroy(self, widget):
       gtk.main_quit()
-
-if __name__ == '__main__':
-   gtasks = GTasks()
-   gtasks.main()
 
 # vim: sw=3
