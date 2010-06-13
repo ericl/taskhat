@@ -3,12 +3,20 @@
 import pygtk
 pygtk.require('2.0')
 
-import gtk, gobject, pango
+import gtk
+import gobject
+import pango
+
+from datetime import datetime
+
+def dateformatter(column, renderer, model, iter):
+   pyobj = model.get_value(iter, 4)
+   renderer.set_property('text', str(pyobj).split()[0])
 
 class TaskGroup(gtk.VBox):
    def __init__(self, name, style):
       super(gtk.VBox, self).__init__()
-      self.model = gtk.ListStore(gobject.TYPE_STRING)
+      self.model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
       self.tree_view = gtk.TreeView(self.model)
       self.ebox = gtk.EventBox()
       self.label = gtk.Label(name)
@@ -24,9 +32,46 @@ class TaskGroup(gtk.VBox):
       self.pack_start(self.tree_view, False, False)
       self.tree_view.set_headers_visible(False)
 
-      cell = gtk.CellRendererText()
-      column = gtk.TreeViewColumn("Tasks", cell, text=0)
+      cells = gtk.CellRendererText()
+      cell0 = gtk.CellRendererToggle()
+      cell1 = gtk.CellRendererText()
+      cell2 = gtk.CellRendererText()
+      cell4 = gtk.CellRendererPixbuf()
+      checkbox = gtk.TreeViewColumn("Done")
+      checkbox.pack_start(cells, True)
+      checkbox.pack_end(cell0, False)
+      checkbox.set_min_width(45)
+      checkbox.add_attribute(cell0, 'active', 2)
+      prio = gtk.TreeViewColumn("Type", cell1, text=1)
+      column = gtk.TreeViewColumn("Tasks", cell2, text=0)
+      column.set_expand(True)
+
+      renderer = gtk.CellRendererCombo()
+      renderer.set_property('editable', True)
+      renderer.set_property('has_entry', True)
+      due_date_store = gtk.ListStore(gobject.TYPE_STRING)
+      due_date_store.set(due_date_store.append(), 0, "6/13 - Today")
+      due_date_store.set(due_date_store.append(), 0, "6/14 - Tomorrow")
+      due_date_store.set(due_date_store.append(), 0, "6/15 - Tue")
+      due_date_store.set(due_date_store.append(), 0, "6/16 - Wed")
+      due_date_store.set(due_date_store.append(), 0, "6/17 - Thu")
+      due_date_store.set(due_date_store.append(), 0, "6/18 - Fri")
+      due_date_store.set(due_date_store.append(), 0, "6/19 - Tue")
+      due_date_store.set(due_date_store.append(), 0, "6/20 - Next Week")
+      due_date_store.set(due_date_store.append(), 0, "No Date")
+      due_date_store.set(due_date_store.append(), 0, "Choose Date...")
+      renderer.set_property('model', due_date_store)
+      renderer.set_property('text_column', 0)
+      dates = gtk.TreeViewColumn("Dates")
+      dates.pack_start(renderer, True)
+      dates.set_cell_data_func(renderer, dateformatter)
+
+      notes = gtk.TreeViewColumn("Notes", cell4)
+      self.tree_view.append_column(checkbox)
+      self.tree_view.append_column(prio)
       self.tree_view.append_column(column)
+      self.tree_view.append_column(dates)
+      self.tree_view.append_column(notes)
 
       self.tree_view.show()
       self.ebox.show()
@@ -34,7 +79,7 @@ class TaskGroup(gtk.VBox):
 
    def add(self, text):
       self.label.show()
-      self.model.set(self.model.append(), 0, text)
+      self.model.set(self.model.append(), 0, text, 1, '  -  ', 3, '    ', 4, datetime.today())
 
 class GTasks:
    def __init__(self):
@@ -65,23 +110,14 @@ class GTasks:
       abutton.connect('clicked', self.entry_done)
       abutton.show()
 
+      self.add_category('Work')
+      self.add_category('Home')
+
       entry = self.entry = gtk.Entry()
       entry.connect('changed', self.entry_changed)
       entry.connect('activate', self.entry_done)
       entry.set_width_chars(25)
       entry.show()
-
-      combo = self.combo = gtk.combo_box_new_text()
-      self.add_category('All')
-      self.add_category('Work')
-      self.add_category('Home')
-      combo.set_active(0)
-      combo.show()
-
-      item_new = self.item_new = gtk.MenuItem('New Category...')
-      item_new.connect('activate', self.new_category_add)
-      item_new.show()
-      menu.add(item_new)
 
       scrolled_window = gtk.ScrolledWindow()
       scrolled_window.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
@@ -102,7 +138,10 @@ class GTasks:
 
       ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
-      box2.pack_start(combo, False, False)
+      status = self.status = gtk.Label(' --')
+      status.show()
+      status.set_sensitive(False)
+      box2.pack_start(status, False, False)
       box2.pack_end(abutton, False, False)
       box2.pack_end(entry, False, False)
       box1.pack_start(box2, False, False)
@@ -116,16 +155,7 @@ class GTasks:
       self.window.show()
       entry.grab_focus()
 
-   def new_category_add(self, widget):
-      name = 'UNIMPLEMENTED'
-      if name:
-         self.menu.remove(self.item_new)
-         self.add_category(name)
-         self.menu.add(self.item_new)
-         self.entry_done(widget, name)
-
    def add_category(self, name):
-      self.combo.append_text(name)
       item = gtk.MenuItem(name)
       item.show()
       item.connect('activate', self.entry_done, name)
@@ -149,12 +179,14 @@ class GTasks:
    def entry_changed(self, widget, data=None):
       if self.validate_entry_text(widget.get_text()):
          self.abutton.set_sensitive(True)
+         self.status.set_label(" New <type>[ due <date>]")
       else:
          self.abutton.set_sensitive(False)
+         self.status.set_label(" --")
 
    def entry_done(self, widget, data=None):
       if not data:
-         data = self.get_active_text(self.combo)
+         data = 'All'
       text = self.validate_entry_text(self.entry.get_text())
       if text:
          self.group_of_entry(text).add('%s: %s' % (data, text))
