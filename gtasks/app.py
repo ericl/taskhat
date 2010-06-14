@@ -61,7 +61,7 @@ def derive_label(text):
    if text.endswith('!'):
       ttype = 'Important task'
    elif text.endswith('='):
-      ttype = 'Normal task'
+      ttype = 'Mundane task'
    elif text.endswith('-'):
       ttype = 'Idle task'
    elif text.endswith('*'):
@@ -129,7 +129,7 @@ class TaskGroup(gtk.VBox):
       prio_store.set(prio_store.append(), 0, "None")
       prio_store.set(prio_store.append(), 0, "Administrivia")
       prio_store.set(prio_store.append(), 0, "High")
-      prio_store.set(prio_store.append(), 0, "Normal")
+      prio_store.set(prio_store.append(), 0, "Medium")
       prio_store.set(prio_store.append(), 0, "Low")
       renderer.set_property('model', prio_store)
       renderer.set_property('text_column', 0)
