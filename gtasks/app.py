@@ -90,8 +90,9 @@ def derive_label(text):
    return ((" %s %s %s" % (ttype, verb, date)), text.strip())
 
 class TaskGroup(gtk.VBox):
-   def __init__(self, name, style):
+   def __init__(self, name, style, persist):
       super(gtk.VBox, self).__init__()
+      self.persist = persist
       self.model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
       self.tree_view = gtk.TreeView(self.model)
       self.ebox = gtk.EventBox()
@@ -176,8 +177,12 @@ class TaskGroup(gtk.VBox):
       self.model.set(self.model.append(), 0, text, 1, '  -  ', 3, '    ', 4, datetime.today())
 
    def destroy_task(self, widget, index):
-      val = self.model.get(self.model.iter_nth_child(None, int(index)), 2)
-      self.model.set_value(self.model.iter_nth_child(None, int(index)), 2, not val[0])
+      destroy = self.model.get(self.model.iter_nth_child(None, int(index)), 2)[0]
+      self.model.set_value(self.model.iter_nth_child(None, int(index)), 2, not destroy)
+      if not destroy:
+         self.persist.destroy(self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0])
+      else:
+         self.persist.save(Task('<?>', self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0]))
 
 class GTasks:
    def __init__(self):
@@ -228,9 +233,9 @@ class GTasks:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      today = TaskGroup("Today", self.window.get_style())
-      tomorrow = TaskGroup("Tomorrow", self.window.get_style())
-      future = TaskGroup("Future", self.window.get_style())
+      today = TaskGroup("Today", self.window.get_style(), self.persist)
+      tomorrow = TaskGroup("Tomorrow", self.window.get_style(), self.persist)
+      future = TaskGroup("Future", self.window.get_style(), self.persist)
       self.groups = [today, tomorrow, future]
       for group in self.groups:
          box3.pack_start(group, False, False)
@@ -265,10 +270,8 @@ class GTasks:
    def validate_entry_text(self, contents):
       return contents.strip()
 
-   i = 0
    def group_of_entry(self, entry):
-      self.i += 1
-      return self.groups[self.i % len(self.groups)]
+      return self.groups[2]
 
    def get_active_text(self, combobox):
       model = combobox.get_model()
@@ -287,7 +290,7 @@ class GTasks:
          self.status.set_label(HELP_STRING)
 
    def insert_task(self, task):
-      self.group_of_entry(task.text).add('%s: %s' % (task.category, task.text))
+      self.group_of_entry(task.text).add(task.text)
 
    def entry_done(self, widget, data=None):
       if not data:

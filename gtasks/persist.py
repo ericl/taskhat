@@ -9,8 +9,18 @@ class Persist:
 
     def save(self, task):
         self.tasks.append(task)
+        self.sync()
+
+    def sync(self):
         with open(self.path, 'w') as f:
             f.write(dumps(self.tasks))
+
+    def destroy(self, name):
+        for task in self.tasks:
+            if task.text == name:
+                self.tasks.remove(task)
+                self.sync()
+                return
 
     def restore(self, f_insert):
         try:
