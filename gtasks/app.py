@@ -309,4 +309,4 @@ class GTasks:
    def destroy(self, widget):
       gtk.main_quit()
 
-# vim: sw=3
+# vim: et sw=3
