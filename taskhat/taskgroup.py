@@ -45,15 +45,16 @@ class TaskGroup(gtk.VBox):
    def sort_func(self, model, iter1, iter2):
       task1 = model.get_value(iter1, 0)
       task2 = model.get_value(iter2, 0)
-      x = [(task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
       for comp in x:
          if comp != 0:
             return comp
       return 0
 
-   def __init__(self, name, realizedparent, persist, daterange):
+   def __init__(self, name, realizedparent, persist, daterange, hide=False):
       super(gtk.VBox, self).__init__()
       TaskGroup.groups.append(self)
+      self.hide = hide
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
@@ -67,7 +68,10 @@ class TaskGroup(gtk.VBox):
 
       self.ebox.add(self.label)
 
-      self.label.modify_font(pango.FontDescription('Sans Bold 15'))
+      if self.hide:
+         self.label.modify_font(pango.FontDescription('Sans 15'))
+      else:
+         self.label.modify_font(pango.FontDescription('Sans Bold 15'))
       self.label.set_alignment(0,0)
       self.label.set_padding(3,3)
       self.pack_start(self.ebox, False, False)
@@ -112,6 +116,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       date_store = self.date_store = gtk.ListStore(gobject.TYPE_STRING)
+      date_store.set(date_store.append(), 0, str(TaskDate(None)))
       date_store.set(date_store.append(), 0, str(TaskDate(0)))
       date_store.set(date_store.append(), 0, str(TaskDate(1)))
       date_store.set(date_store.append(), 0, str(TaskDate(2)))
@@ -120,7 +125,7 @@ class TaskGroup(gtk.VBox):
       date_store.set(date_store.append(), 0, str(TaskDate(5)))
       date_store.set(date_store.append(), 0, str(TaskDate(6)))
       date_store.set(date_store.append(), 0, str(TaskDate(7)))
-      date_store.set(date_store.append(), 0, str(TaskDate(None)))
+      date_store.set(date_store.append(), 0, str(TaskDate(TaskDate.FUTURE)))
       date_store.set(date_store.append(), 0, "Choose Date...")
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)

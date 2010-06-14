@@ -59,6 +59,9 @@ def parse_date(text):
    elif x.startswith('nex'):
       out = 'next week'
       off = 7
+   elif x.startswith('fut'):
+      out = 'in the future'
+      off = TaskDate.FUTURE
    else:
       found = False
    if found:
@@ -155,13 +158,13 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      overdue = TaskGroup("Overdue", self.window, self.persist, (None, -1))
-      today = TaskGroup("Today", self.window, self.persist, (0, 0))
-      tomorrow = TaskGroup("Tomorrow", self.window, self.persist, (1, 1))
-      next7 = TaskGroup("Next 7 Days", self.window, self.persist, (2, 7))
-      future = TaskGroup("Future", self.window, self.persist, (8, None))
-      self.groups = [overdue, today, tomorrow, next7, future]
-      for group in self.groups:
+      TaskGroup("Undated", self.window, self.persist, (None, -TaskDate.FUTURE), True)
+      TaskGroup("Overdue", self.window, self.persist, (-TaskDate.FUTURE, -1))
+      TaskGroup("Today", self.window, self.persist, (0, 0))
+      TaskGroup("Tomorrow", self.window, self.persist, (1, 1))
+      TaskGroup("Next 7 Days", self.window, self.persist, (2, 7))
+      TaskGroup("Future", self.window, self.persist, (8, None))
+      for group in TaskGroup.groups:
          box3.pack_start(group, False, False)
 
       ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
@@ -209,7 +212,7 @@ class Taskhat:
          self.status.set_label(HELP_STRING)
 
    def insert_task(self, task):
-      self.groups[0].smart_assign(task)
+      TaskGroup.groups[0].smart_assign(task)
 
    def entry_done(self, widget, data=None):
       res = derive_label(self.validate_entry_text(self.entry.get_text()))

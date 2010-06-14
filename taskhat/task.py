@@ -1,9 +1,12 @@
 import datetime
 
 class TaskDate:
+   FUTURE = 999999
    def __init__(self, offset_days):
       if offset_days is None:
          self.date = None
+      elif offset_days is TaskDate.FUTURE:
+         self.date = TaskDate.FUTURE
       else:
          self.date = self.get_today() + datetime.timedelta(offset_days)
 
@@ -13,8 +16,10 @@ class TaskDate:
       return today
 
    def offset(self):
-      if not self.date:
-         return 9999999
+      if self.date is None:
+         return -TaskDate.FUTURE
+      elif self.date == TaskDate.FUTURE:
+         return TaskDate.FUTURE
       return (self.date - self.get_today()).days
 
    def markup(self):
@@ -23,6 +28,8 @@ class TaskDate:
       if self.date is None:
          # emulate a horizontal dash
          return '<span strikethrough="true" size="700">No Date</span>'
+      elif self.date == TaskDate.FUTURE:
+         return 'Future'
       x = self.hname()
       if x == 'In 1 Week':
          return '%s/%s - <span size="1">In </span>1 W<span size="1">ee</span>k' % (self.date.month, self.date.day)
@@ -37,6 +44,8 @@ class TaskDate:
    def __str__(self):
       if self.date is None:
          return 'No Date'
+      elif self.date == TaskDate.FUTURE:
+         return 'Future'
       return '%s/%s - %s' % (self.date.month, self.date.day, self.hname())
 
 class Priority:
@@ -80,6 +89,9 @@ class Task:
          if value == str(x):
             return x
       n = TaskDate(None)
+      if value == str(n):
+         return n
+      n = TaskDate(TaskDate.FUTURE)
       if value == str(n):
          return n
       assert False
