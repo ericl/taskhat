@@ -27,14 +27,43 @@ def taskformatter(column, renderer, model, iter):
 
 
 class TaskGroup(gtk.VBox):
-   def __init__(self, name, realizedparent, persist):
+   groups = []
+
+   def where_it_should_go(self, task):
+      assigned = TaskGroup.groups[0]
+      offset = task.date.offset()
+      for group in TaskGroup.groups:
+         if ((group.daterange[0] is None) or group.daterange[0] <= offset) and \
+            ((group.daterange[1] is None) or group.daterange[1] >= offset):
+            assigned = group
+            break
+      return assigned
+
+   def smart_assign(self, task):
+      self.where_it_should_go(task).add(task)
+
+   def sort_func(self, model, iter1, iter2):
+      task1 = model.get_value(iter1, 0)
+      task2 = model.get_value(iter2, 0)
+      x = [(task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      for comp in x:
+         if comp != 0:
+            return comp
+      return 0
+
+   def __init__(self, name, realizedparent, persist, daterange):
       super(gtk.VBox, self).__init__()
+      TaskGroup.groups.append(self)
       self.persist = persist
+      self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
       self.tree_view = gtk.TreeView(self.model)
       self.ebox = gtk.EventBox()
       self.label = gtk.Label(name)
       self.realizedparent = realizedparent
+
+      self.model.set_sort_func(42, self.sort_func)
+      self.model.set_sort_column_id(42, gtk.SORT_DESCENDING)
 
       self.ebox.add(self.label)
 
@@ -67,10 +96,10 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       prio_store = self.prio_store = gtk.ListStore(gobject.TYPE_STRING)
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_LOW))
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_HIGH))
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_ADMIN))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_HIGH))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_LOW))
       renderer.set_property('model', prio_store)
       renderer.set_property('text_column', 0)
       prio = gtk.TreeViewColumn("Type")
@@ -124,14 +153,22 @@ class TaskGroup(gtk.VBox):
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
 
    def prio_changed(self, renderer, path, iter):
-      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      miter = self.model.iter_nth_child(None, int(path))
+      task = self.model.get_value(miter, 0)
       task.prio = task.prio_match(self.prio_store.get_value(iter, 0))
+      self.remove(miter)
+      self.add(task)
       self.persist.sync()
 
    def date_changed(self, renderer, path, iter):
-      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      miter = self.model.iter_nth_child(None, int(path))
+      task = self.model.get_value(miter, 0)
       value = self.date_store.get_value(iter, 0)
       task.date = task.match_date(value)
+      where = self.where_it_should_go(task)
+      if where != self:
+         where.add(task)
+         self.remove(miter)
       self.persist.sync()
 
    def text_changed(self, renderer, path, text):
@@ -144,6 +181,11 @@ class TaskGroup(gtk.VBox):
    def add(self, task):
       self.label.show()
       self.model.set(self.model.append(), 0, task)
+
+   def remove(self, miter):
+      self.model.remove(miter)
+      if len(self.model) == 0:
+         self.label.hide()
 
    def destroy_task(self, widget, path):
       task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)

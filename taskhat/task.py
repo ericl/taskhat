@@ -12,7 +12,9 @@ class TaskDate:
       today = datetime.datetime(now.year, now.month, now.day)
       return today
 
-   def recalc_offset(self):
+   def offset(self):
+      if not self.date:
+         return 9999999
       return (self.date - self.get_today()).days
 
    def markup(self):
@@ -27,7 +29,7 @@ class TaskDate:
       return '%s/%s - %s<span size="0">%s</span>' % (self.date.month, self.date.day, x[:3], x[3:])
 
    def hname(self):
-      x = self.recalc_offset()
+      x = self.offset()
       if x == 7:
          return 'In 1 Week'
       return self.date.strftime('%A')
@@ -50,10 +52,10 @@ class Priority:
       return self.name
 
 class Task:
-   PRIORITY_ADMIN = Priority(0, 'Administrivia (*)', '<span size="1">Administrivia (</span>*<span size="0">)</span>')
-   PRIORITY_HIGH = Priority(1, 'High (!)', '<span size="1">High (</span>!<span size="0">)</span>')
-   PRIORITY_MEDIUM = Priority(2, 'Medium (=)', '<span size="1">Medium (</span>=<span size="0">)</span>')
-   PRIORITY_LOW = Priority(3, 'Low (-)', '<span size="1">Low (</span>-<span size="0">)</span>')
+   PRIORITY_ADMIN = Priority(0, '*', '*')
+   PRIORITY_HIGH = Priority(1, '1', '1')
+   PRIORITY_MEDIUM = Priority(2, '2', '2')
+   PRIORITY_LOW = Priority(3, '-', '-')
 
    def __init__(self, text, date, prio):
       self.text = text

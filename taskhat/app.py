@@ -53,6 +53,9 @@ def parse_date(text):
    elif x.startswith('tom'):
       out = 'tomorrow'
       off = 1
+   elif x.startswith('yest'):
+      out = 'yesterday'
+      off = -1
    elif x.startswith('nex'):
       out = 'next week'
       off = 7
@@ -152,10 +155,12 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      today = TaskGroup("Today", self.window, self.persist)
-      tomorrow = TaskGroup("Tomorrow", self.window, self.persist)
-      future = TaskGroup("Future", self.window, self.persist)
-      self.groups = [today, tomorrow, future]
+      overdue = TaskGroup("Overdue", self.window, self.persist, (None, -1))
+      today = TaskGroup("Today", self.window, self.persist, (0, 0))
+      tomorrow = TaskGroup("Tomorrow", self.window, self.persist, (1, 1))
+      next7 = TaskGroup("Next 7 Days", self.window, self.persist, (2, 7))
+      future = TaskGroup("Future", self.window, self.persist, (8, None))
+      self.groups = [overdue, today, tomorrow, next7, future]
       for group in self.groups:
          box3.pack_start(group, False, False)
 
@@ -187,9 +192,6 @@ class Taskhat:
    def validate_entry_text(self, contents):
       return contents.strip()
 
-   def group_of_entry(self, entry):
-      return self.groups[2]
-
    def get_active_text(self, combobox):
       model = combobox.get_model()
       active = combobox.get_active()
@@ -207,7 +209,7 @@ class Taskhat:
          self.status.set_label(HELP_STRING)
 
    def insert_task(self, task):
-      self.group_of_entry(task.text).add(task)
+      self.groups[0].smart_assign(task)
 
    def entry_done(self, widget, data=None):
       res = derive_label(self.validate_entry_text(self.entry.get_text()))
