@@ -17,9 +17,13 @@ HELP_STRING = ' Create a new task:'
 def dateformatter(column, renderer, model, iter):
    pyobj = model.get_value(iter, 4)
    renderer.set_property('text', str(pyobj).split()[0])
+   renderer.set_property('xalign', 0.5)
+   renderer.set_property('alignment', pango.ALIGN_CENTER)
 
 def prioformatter(column, renderer, model, iter):
    renderer.set_property('text', model.get_value(iter, 1))
+   renderer.set_property('xalign', 0.5)
+   renderer.set_property('alignment', pango.ALIGN_CENTER)
 
 def parse_date(text):
    x = None
@@ -126,7 +130,6 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       prio_store = gtk.ListStore(gobject.TYPE_STRING)
-      prio_store.set(prio_store.append(), 0, "None")
       prio_store.set(prio_store.append(), 0, "Administrivia")
       prio_store.set(prio_store.append(), 0, "High")
       prio_store.set(prio_store.append(), 0, "Medium")
