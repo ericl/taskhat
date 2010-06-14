@@ -9,75 +9,104 @@ from task import Task, TaskDate
 from persist import Persist
 from taskgroup import TaskGroup
 
+from datetime import datetime
+
 HELP_STRING = ' Enter a new task:'
+
+def calc_offset(weekday):
+   return weekday - datetime.today().weekday()
 
 def parse_date(text):
    x = None
    out = '<?>'
+   off = None
    try:
       x = text.split()[-1]
    except:
-      return '<?>', text
+      return '<?>', text, off
    x = x.lower()
    found = True
    if x.startswith('mon'):
       out = 'Monday'
+      off = calc_offset(0)
    elif x.startswith('tue'):
       out = 'Tuesday'
+      off = calc_offset(1)
    elif x.startswith('wed'):
       out = 'Wednesday'
+      off = calc_offset(2)
    elif x.startswith('thu'):
       out = 'Thursday'
+      off = calc_offset(3)
    elif x.startswith('fri'):
       out = 'Friday'
+      off = calc_offset(4)
    elif x.startswith('sat'):
       out = 'Saturday'
+      off = calc_offset(5)
    elif x.startswith('sun'):
       out = 'Sunday'
-   elif x.startswith('tod'):
+      off = calc_offset(6)
+   elif x.startswith('tod') or x == 'now':
       out = 'today'
+      off = 0
    elif x.startswith('tom'):
       out = 'tomorrow'
+      off = 1
+   elif x.startswith('nex'):
+      out = 'next week'
+      off = 7
    else:
       found = False
    if found:
       text = ' '.join(text.split()[:-1])
-   return out, text
+   return out, text, off
 
 def derive_label(text):
    ttype = '<?>'
    parse = False
    verb = 'due'
+   prio = Task.PRIORITY_LOW
    if text.endswith('!'):
       ttype = 'Important task'
+      prio = Task.PRIORITY_HIGH
    elif text.endswith('='):
-      ttype = 'Mundane task'
+      ttype = 'Regular task'
+      prio = Task.PRIORITY_MEDIUM
    elif text.endswith('-'):
       ttype = 'Idle task'
+      prio = Task.PRIORITY_LOW
    elif text.endswith('*'):
       ttype = 'Administrivia'
+      prio = Task.PRIORITY_ADMIN
    else:
       parse = True
    if parse:
       text = ' ' + text + ' '
       if ' hw ' in text or ' homework ' in text:
          ttype = 'Homework'
+         prio = Task.PRIORITY_MEDIUM
       if ' proj' in text:
          ttype = 'Project'
+         prio = Task.PRIORITY_HIGH
       if ' read ' in text:
          ttype = 'Reading'
+         prio = Task.PRIORITY_LOW
       if ' final ' in text or ' midterm ' in text or ' study ' in text or ' exam ' in text:
          ttype = 'Exam'
          verb = 'on'
+         prio = Task.PRIORITY_HIGH
       if ' quiz ' in text:
          ttype = 'Quiz'
          verb = 'on'
+         prio = Task.PRIORITY_MEDIUM
       if ' turn in ' in text:
          ttype = 'Administrivia'
+         prio = Task.PRIORITY_ADMIN
    else:
       text = text[:-1]
-   date, text = parse_date(text)
-   return ((" %s %s %s" % (ttype, verb, date)), text.strip())
+   date, text, off = parse_date(text)
+   return (" %s %s %s" % (ttype, verb, date)), text.strip(), TaskDate(off), prio
 
 class Taskhat:
    def __init__(self):
@@ -181,9 +210,10 @@ class Taskhat:
       self.group_of_entry(task.text).add(task)
 
    def entry_done(self, widget, data=None):
-      text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
+      res = derive_label(self.validate_entry_text(self.entry.get_text()))
+      text = res[1]
       if text:
-         task = Task(text, TaskDate(None), Task.PRIORITY_LOW)
+         task = Task(text, res[2], res[3])
          self.insert_task(task)
          self.persist.save(task)
          self.entry.set_text('')
