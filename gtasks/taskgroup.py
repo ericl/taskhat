@@ -2,7 +2,7 @@ import gtk
 import gobject
 import pango
 
-from task import Task
+from task import Task, TaskDate
 
 def togformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
@@ -10,13 +10,13 @@ def togformatter(column, renderer, model, iter):
 
 def dateformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
-   renderer.set_property('markup', task.pretty_date())
+   renderer.set_property('markup', task.date.markup())
    renderer.set_property('xalign', 0.5)
    renderer.set_property('alignment', pango.ALIGN_CENTER)
 
 def prioformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
-   renderer.set_property('text', task.prio.symbol())
+   renderer.set_property('markup', task.prio.symbol())
    renderer.set_property('xalign', 0.5)
    renderer.set_property('alignment', pango.ALIGN_CENTER)
 
@@ -73,25 +73,28 @@ class TaskGroup(gtk.VBox):
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_LOW))
       renderer.set_property('model', prio_store)
+      renderer.set_property('text_column', 0)
       prio = gtk.TreeViewColumn("Type")
       prio.pack_start(renderer, True)
       prio.set_cell_data_func(renderer, prioformatter)
+      prio.set_min_width(30)
 
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       due_date_store = gtk.ListStore(gobject.TYPE_STRING)
-      due_date_store.set(due_date_store.append(), 0, "6/13 - Today")
-      due_date_store.set(due_date_store.append(), 0, "6/14 - Tomorrow")
-      due_date_store.set(due_date_store.append(), 0, "6/15 - Tue")
-      due_date_store.set(due_date_store.append(), 0, "6/16 - Wed")
-      due_date_store.set(due_date_store.append(), 0, "6/17 - Thu")
-      due_date_store.set(due_date_store.append(), 0, "6/18 - Fri")
-      due_date_store.set(due_date_store.append(), 0, "6/19 - Tue")
-      due_date_store.set(due_date_store.append(), 0, "6/20 - Next Week")
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(0)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(1)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(2)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(3)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(4)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(5)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(6)))
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(7)))
       due_date_store.set(due_date_store.append(), 0, "No Date")
       due_date_store.set(due_date_store.append(), 0, "Choose Date...")
       renderer.set_property('model', due_date_store)
+      renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)

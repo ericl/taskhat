@@ -5,9 +5,7 @@ pygtk.require('2.0')
 
 import gtk
 
-from datetime import datetime
-
-from task import Task
+from task import Task, TaskDate
 from persist import Persist
 from taskgroup import TaskGroup
 
@@ -187,7 +185,7 @@ class GTasks:
    def entry_done(self, widget, data=None):
       text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
       if text:
-         task = Task(text, datetime.today(), Task.PRIORITY_LOW)
+         task = Task(text, TaskDate(0), Task.PRIORITY_LOW)
          self.insert_task(task)
          self.persist.save(task)
          self.entry.set_text('')
