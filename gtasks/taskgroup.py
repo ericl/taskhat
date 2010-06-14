@@ -91,11 +91,12 @@ class TaskGroup(gtk.VBox):
       due_date_store.set(due_date_store.append(), 0, str(TaskDate(5)))
       due_date_store.set(due_date_store.append(), 0, str(TaskDate(6)))
       due_date_store.set(due_date_store.append(), 0, str(TaskDate(7)))
-      due_date_store.set(due_date_store.append(), 0, "No Date")
+      due_date_store.set(due_date_store.append(), 0, str(TaskDate(None)))
       due_date_store.set(due_date_store.append(), 0, "Choose Date...")
       renderer.set_property('model', due_date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
+      dates.set_min_width(35)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
 
