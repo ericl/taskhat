@@ -4,7 +4,7 @@ from pickle import loads, dumps
 class Persist:
    def __init__(self, name):
       self.name = name
-      self.path = os.environ['HOME'] + '/.gtasks-persist-' + self.name
+      self.path = os.environ['HOME'] + '/.taskhat-persist-' + self.name
       self.tasks = []
 
    def save(self, task):

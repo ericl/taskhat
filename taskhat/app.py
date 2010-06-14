@@ -79,7 +79,7 @@ def derive_label(text):
    date, text = parse_date(text)
    return ((" %s %s %s" % (ttype, verb, date)), text.strip())
 
-class GTasks:
+class Taskhat:
    def __init__(self):
       self.persist = Persist('Default')
       self.window = gtk.Window()
