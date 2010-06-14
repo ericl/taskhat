@@ -153,8 +153,6 @@ class GTasks:
       self.window.connect('notify::style', self.update_group_styles)
 
    def update_group_styles(self, args, x):
-      for group in self.groups:
-         group.pull_styles_from_window()
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
    def validate_entry_text(self, contents):

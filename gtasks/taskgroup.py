@@ -113,8 +113,9 @@ class TaskGroup(gtk.VBox):
       self.ebox.show()
       self.pull_styles_from_window()
       self.show()
+      self.realizedparent.connect('notify::style', self.pull_styles_from_window)
 
-   def pull_styles_from_window(self):
+   def pull_styles_from_window(self, *args):
       style = self.realizedparent.get_style()
       self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
