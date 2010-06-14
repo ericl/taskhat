@@ -18,6 +18,9 @@ def dateformatter(column, renderer, model, iter):
    pyobj = model.get_value(iter, 4)
    renderer.set_property('text', str(pyobj).split()[0])
 
+def prioformatter(column, renderer, model, iter):
+   renderer.set_property('text', model.get_value(iter, 1))
+
 def parse_date(text):
    x = None
    out = '<?>'
@@ -107,21 +110,36 @@ class TaskGroup(gtk.VBox):
 
       cells = gtk.CellRendererText()
       cell0 = gtk.CellRendererToggle()
-      cell1 = gtk.CellRendererText()
+      cell0.connect('toggled', self.destroy_task)
       cell2 = gtk.CellRendererText()
+      cell2.set_property('editable', True)
       cell4 = gtk.CellRendererPixbuf()
       checkbox = gtk.TreeViewColumn("Done")
       checkbox.pack_start(cells, True)
       checkbox.pack_end(cell0, False)
       checkbox.set_min_width(45)
       checkbox.add_attribute(cell0, 'active', 2)
-      prio = gtk.TreeViewColumn("Type", cell1, text=1)
       column = gtk.TreeViewColumn("Tasks", cell2, text=0)
       column.set_expand(True)
 
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
-      renderer.set_property('has_entry', True)
+      renderer.set_property('has_entry', False)
+      prio_store = gtk.ListStore(gobject.TYPE_STRING)
+      prio_store.set(prio_store.append(), 0, "None")
+      prio_store.set(prio_store.append(), 0, "Administrivia")
+      prio_store.set(prio_store.append(), 0, "High")
+      prio_store.set(prio_store.append(), 0, "Normal")
+      prio_store.set(prio_store.append(), 0, "Low")
+      renderer.set_property('model', prio_store)
+      renderer.set_property('text_column', 0)
+      prio = gtk.TreeViewColumn("Type")
+      prio.pack_start(renderer, True)
+      prio.set_cell_data_func(renderer, prioformatter)
+
+      renderer = gtk.CellRendererCombo()
+      renderer.set_property('editable', True)
+      renderer.set_property('has_entry', False)
       due_date_store = gtk.ListStore(gobject.TYPE_STRING)
       due_date_store.set(due_date_store.append(), 0, "6/13 - Today")
       due_date_store.set(due_date_store.append(), 0, "6/14 - Tomorrow")
@@ -147,6 +165,7 @@ class TaskGroup(gtk.VBox):
       self.tree_view.append_column(column)
       self.tree_view.append_column(dates)
       self.tree_view.append_column(notes)
+      self.tree_view.set_hover_selection(True)
 
       self.tree_view.show()
       self.ebox.show()
@@ -155,6 +174,10 @@ class TaskGroup(gtk.VBox):
    def add(self, text):
       self.label.show()
       self.model.set(self.model.append(), 0, text, 1, '  -  ', 3, '    ', 4, datetime.today())
+
+   def destroy_task(self, widget, index):
+      val = self.model.get(self.model.iter_nth_child(None, int(index)), 2)
+      self.model.set_value(self.model.iter_nth_child(None, int(index)), 2, not val[0])
 
 class GTasks:
    def __init__(self):
