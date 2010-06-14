@@ -187,7 +187,7 @@ class TaskGroup(gtk.VBox):
       if not destroy:
          self.persist.destroy(self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0])
       else:
-         self.persist.save(Task('<?>', self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0]))
+         self.persist.save(Task(self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0]))
 
 class GTasks:
    def __init__(self):
@@ -212,15 +212,10 @@ class GTasks:
       image.show()
       label.show()
 
-      abutton = self.abutton = gtk.MenuToolButton(abox, "Add")
-      menu = self.menu = gtk.Menu()
-      abutton.set_menu(menu)
+      abutton = self.abutton = gtk.ToolButton(abox, "Add")
       abutton.set_sensitive(False)
       abutton.connect('clicked', self.entry_done)
       abutton.show()
-
-      self.add_category('Work')
-      self.add_category('Home')
 
       entry = self.entry = gtk.Entry()
       entry.connect('changed', self.entry_changed)
@@ -272,12 +267,6 @@ class GTasks:
          group.pull_styles_from_window()
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
-   def add_category(self, name):
-      item = gtk.MenuItem(name)
-      item.show()
-      item.connect('activate', self.entry_done, name)
-      self.menu.add(item)
-
    def validate_entry_text(self, contents):
       return contents.strip()
 
@@ -304,11 +293,9 @@ class GTasks:
       self.group_of_entry(task.text).add(task.text)
 
    def entry_done(self, widget, data=None):
-      if not data:
-         data = 'All'
       text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
       if text:
-         task = Task(data, text)
+         task = Task(text)
          self.insert_task(task)
          self.persist.save(task)
          self.entry.set_text('')

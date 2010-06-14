@@ -1,4 +1,3 @@
 class Task:
-    def __init__(self, category, text):
-        self.category = category
+    def __init__(self, text):
         self.text = text
