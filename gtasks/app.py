@@ -90,18 +90,17 @@ def derive_label(text):
    return ((" %s %s %s" % (ttype, verb, date)), text.strip())
 
 class TaskGroup(gtk.VBox):
-   def __init__(self, name, style, persist):
+   def __init__(self, name, realizedparent, persist):
       super(gtk.VBox, self).__init__()
       self.persist = persist
       self.model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
       self.tree_view = gtk.TreeView(self.model)
       self.ebox = gtk.EventBox()
       self.label = gtk.Label(name)
+      self.realizedparent = realizedparent
 
       self.ebox.add(self.label)
-      # TODO proper styling that changes with gconf changes
-      self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
-      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
+
       self.label.modify_font(pango.FontDescription('Sans Bold 15'))
       self.label.set_alignment(0,0)
       self.label.set_padding(3,3)
@@ -170,7 +169,13 @@ class TaskGroup(gtk.VBox):
 
       self.tree_view.show()
       self.ebox.show()
+      self.pull_styles_from_window()
       self.show()
+
+   def pull_styles_from_window(self):
+      style = self.realizedparent.get_style()
+      self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
+      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
 
    def add(self, text):
       self.label.show()
@@ -228,14 +233,14 @@ class GTasks:
       scrolled_window.show()
       box3 = gtk.VBox()
       box3.show()
-      ebox3 = gtk.EventBox()
+      ebox3 = self.ebox3 = gtk.EventBox()
       ebox3.add(box3)
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      today = TaskGroup("Today", self.window.get_style(), self.persist)
-      tomorrow = TaskGroup("Tomorrow", self.window.get_style(), self.persist)
-      future = TaskGroup("Future", self.window.get_style(), self.persist)
+      today = TaskGroup("Today", self.window, self.persist)
+      tomorrow = TaskGroup("Tomorrow", self.window, self.persist)
+      future = TaskGroup("Future", self.window, self.persist)
       self.groups = [today, tomorrow, future]
       for group in self.groups:
          box3.pack_start(group, False, False)
@@ -260,6 +265,12 @@ class GTasks:
       self.persist.restore(self.insert_task)
       self.window.show()
       entry.grab_focus()
+      self.window.connect('notify::style', self.update_group_styles)
+
+   def update_group_styles(self, args, x):
+      for group in self.groups:
+         group.pull_styles_from_window()
+      self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
    def add_category(self, name):
       item = gtk.MenuItem(name)
