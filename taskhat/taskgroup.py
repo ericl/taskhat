@@ -61,11 +61,12 @@ class TaskGroup(gtk.VBox):
       column.pack_start(renderer, True)
       column.set_expand(True)
       column.set_cell_data_func(renderer, taskformatter)
+      renderer.connect('edited', self.text_changed)
 
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
-      prio_store = gtk.ListStore(gobject.TYPE_STRING)
+      prio_store = self.prio_store = gtk.ListStore(gobject.TYPE_STRING)
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_LOW))
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_HIGH))
@@ -76,27 +77,29 @@ class TaskGroup(gtk.VBox):
       prio.pack_start(renderer, True)
       prio.set_cell_data_func(renderer, prioformatter)
       prio.set_min_width(30)
+      renderer.connect('changed', self.prio_changed)
 
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
-      due_date_store = gtk.ListStore(gobject.TYPE_STRING)
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(0)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(1)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(2)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(3)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(4)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(5)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(6)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(7)))
-      due_date_store.set(due_date_store.append(), 0, str(TaskDate(None)))
-      due_date_store.set(due_date_store.append(), 0, "Choose Date...")
-      renderer.set_property('model', due_date_store)
+      date_store = self.date_store = gtk.ListStore(gobject.TYPE_STRING)
+      date_store.set(date_store.append(), 0, str(TaskDate(0)))
+      date_store.set(date_store.append(), 0, str(TaskDate(1)))
+      date_store.set(date_store.append(), 0, str(TaskDate(2)))
+      date_store.set(date_store.append(), 0, str(TaskDate(3)))
+      date_store.set(date_store.append(), 0, str(TaskDate(4)))
+      date_store.set(date_store.append(), 0, str(TaskDate(5)))
+      date_store.set(date_store.append(), 0, str(TaskDate(6)))
+      date_store.set(date_store.append(), 0, str(TaskDate(7)))
+      date_store.set(date_store.append(), 0, str(TaskDate(None)))
+      date_store.set(date_store.append(), 0, "Choose Date...")
+      renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
       dates.set_min_width(80)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
+      renderer.connect('changed', self.date_changed)
 
       notes = gtk.TreeViewColumn("Notes", cell4)
       notes.pack_end(cells, True)
@@ -120,15 +123,34 @@ class TaskGroup(gtk.VBox):
       self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
 
+   def prio_changed(self, renderer, path, iter):
+      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      task.prio = task.prio_match(self.prio_store.get_value(iter, 0))
+      self.persist.sync()
+
+   def date_changed(self, renderer, path, iter):
+      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      value = self.date_store.get_value(iter, 0)
+      task.date = task.match_date(value)
+      self.persist.sync()
+
+   def text_changed(self, renderer, path, text):
+      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      val = text.strip()
+      if val:
+         task.text = val
+         self.persist.sync()
+
    def add(self, task):
       self.label.show()
       self.model.set(self.model.append(), 0, task)
 
-   def destroy_task(self, widget, index):
-      task = self.model.get_value(self.model.iter_nth_child(None, int(index)), 0)
+   def destroy_task(self, widget, path):
+      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
       task.removed = not task.removed
       if task.removed:
          self.persist.destroy(task)
       else:
          self.persist.save(task)
 
+# vim: et sw=3

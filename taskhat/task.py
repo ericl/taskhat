@@ -22,16 +22,14 @@ class TaskDate:
          # emulate a horizontal dash
          return '<span strikethrough="true" size="700">No Date</span>'
       x = self.hname()
+      if x == 'In 1 Week':
+         return '%s/%s - <span size="1">In </span>1 W<span size="1">ee</span>k' % (self.date.month, self.date.day)
       return '%s/%s - %s<span size="0">%s</span>' % (self.date.month, self.date.day, x[:3], x[3:])
 
    def hname(self):
       x = self.recalc_offset()
-      if x == 0:
-         return 'Today'
-      elif x == 1:
-         return 'Tomorrow'
-      elif x == 7:
-         return 'Next Week'
+      if x == 7:
+         return 'In 1 Week'
       return self.date.strftime('%A')
 
    def __str__(self):
@@ -62,5 +60,26 @@ class Task:
       self.date = date
       self.prio = prio
       self.removed = False
+
+   def prio_match(self, text):
+      if text == Task.PRIORITY_LOW.name:
+         return Task.PRIORITY_LOW
+      if text == Task.PRIORITY_MEDIUM.name:
+         return Task.PRIORITY_MEDIUM
+      if text == Task.PRIORITY_HIGH.name:
+         return Task.PRIORITY_HIGH
+      if text == Task.PRIORITY_ADMIN.name:
+         return Task.PRIORITY_ADMIN
+      assert False
+
+   def match_date(self, value):
+      for i in range(0, 8):
+         x = TaskDate(i)
+         if value == str(x):
+            return x
+      n = TaskDate(None)
+      if value == str(n):
+         return n
+      assert False
 
 # vim: et sw=3
