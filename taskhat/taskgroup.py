@@ -54,7 +54,7 @@ class TaskGroup(gtk.VBox):
    def __init__(self, name, realizedparent, persist, daterange, hide=False):
       super(gtk.VBox, self).__init__()
       TaskGroup.groups.append(self)
-      self.hide = hide
+      self.top = hide
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
@@ -68,7 +68,7 @@ class TaskGroup(gtk.VBox):
 
       self.ebox.add(self.label)
 
-      if self.hide:
+      if self.top:
          self.label.modify_font(pango.FontDescription('Sans 15'))
       else:
          self.label.modify_font(pango.FontDescription('Sans Bold 15'))
@@ -195,9 +195,6 @@ class TaskGroup(gtk.VBox):
    def destroy_task(self, widget, path):
       task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
       task.removed = not task.removed
-      if task.removed:
-         self.persist.destroy(task)
-      else:
-         self.persist.save(task)
+      self.persist.sync()
 
 # vim: et sw=3

@@ -15,16 +15,13 @@ class Persist:
       with open(self.path, 'w') as f:
          f.write(dumps(self.tasks))
 
-   def destroy(self, task):
-      self.tasks.remove(task)
-      self.sync()
-
    def restore(self, f_insert):
       try:
          with open(self.path, 'r') as f:
             self.tasks = loads(f.read())
             for task in self.tasks:
-               f_insert(task)
+               if not task.removed:
+                  f_insert(task)
       except IOError:
          pass
 
