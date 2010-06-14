@@ -4,26 +4,14 @@ import pygtk
 pygtk.require('2.0')
 
 import gtk
-import gobject
-import pango
 
 from datetime import datetime
 
 from task import Task
 from persist import Persist
+from taskgroup import TaskGroup
 
 HELP_STRING = ' Create a new task:'
-
-def dateformatter(column, renderer, model, iter):
-   pyobj = model.get_value(iter, 4)
-   renderer.set_property('text', str(pyobj).split()[0])
-   renderer.set_property('xalign', 0.5)
-   renderer.set_property('alignment', pango.ALIGN_CENTER)
-
-def prioformatter(column, renderer, model, iter):
-   renderer.set_property('text', model.get_value(iter, 1))
-   renderer.set_property('xalign', 0.5)
-   renderer.set_property('alignment', pango.ALIGN_CENTER)
 
 def parse_date(text):
    x = None
@@ -93,111 +81,12 @@ def derive_label(text):
    date, text = parse_date(text)
    return ((" %s %s %s" % (ttype, verb, date)), text.strip())
 
-class TaskGroup(gtk.VBox):
-   def __init__(self, name, realizedparent, persist):
-      super(gtk.VBox, self).__init__()
-      self.persist = persist
-      self.model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
-      self.tree_view = gtk.TreeView(self.model)
-      self.ebox = gtk.EventBox()
-      self.label = gtk.Label(name)
-      self.realizedparent = realizedparent
-
-      self.ebox.add(self.label)
-
-      self.label.modify_font(pango.FontDescription('Sans Bold 15'))
-      self.label.set_alignment(0,0)
-      self.label.set_padding(3,3)
-      self.pack_start(self.ebox, False, False)
-      self.pack_start(self.tree_view, False, False)
-      self.tree_view.set_headers_visible(False)
-
-      cells = gtk.CellRendererText()
-      cell0 = gtk.CellRendererToggle()
-      cell0.connect('toggled', self.destroy_task)
-      cell2 = gtk.CellRendererText()
-      cell2.set_property('editable', True)
-      cell4 = gtk.CellRendererPixbuf()
-      checkbox = gtk.TreeViewColumn("Done")
-      checkbox.pack_start(cells, True)
-      checkbox.pack_end(cell0, False)
-      checkbox.set_min_width(45)
-      checkbox.add_attribute(cell0, 'active', 2)
-      column = gtk.TreeViewColumn("Tasks", cell2, text=0)
-      column.set_expand(True)
-
-      renderer = gtk.CellRendererCombo()
-      renderer.set_property('editable', True)
-      renderer.set_property('has_entry', False)
-      prio_store = gtk.ListStore(gobject.TYPE_STRING)
-      prio_store.set(prio_store.append(), 0, "Administrivia")
-      prio_store.set(prio_store.append(), 0, "High")
-      prio_store.set(prio_store.append(), 0, "Medium")
-      prio_store.set(prio_store.append(), 0, "Low")
-      renderer.set_property('model', prio_store)
-      renderer.set_property('text_column', 0)
-      prio = gtk.TreeViewColumn("Type")
-      prio.pack_start(renderer, True)
-      prio.set_cell_data_func(renderer, prioformatter)
-
-      renderer = gtk.CellRendererCombo()
-      renderer.set_property('editable', True)
-      renderer.set_property('has_entry', False)
-      due_date_store = gtk.ListStore(gobject.TYPE_STRING)
-      due_date_store.set(due_date_store.append(), 0, "6/13 - Today")
-      due_date_store.set(due_date_store.append(), 0, "6/14 - Tomorrow")
-      due_date_store.set(due_date_store.append(), 0, "6/15 - Tue")
-      due_date_store.set(due_date_store.append(), 0, "6/16 - Wed")
-      due_date_store.set(due_date_store.append(), 0, "6/17 - Thu")
-      due_date_store.set(due_date_store.append(), 0, "6/18 - Fri")
-      due_date_store.set(due_date_store.append(), 0, "6/19 - Tue")
-      due_date_store.set(due_date_store.append(), 0, "6/20 - Next Week")
-      due_date_store.set(due_date_store.append(), 0, "No Date")
-      due_date_store.set(due_date_store.append(), 0, "Choose Date...")
-      renderer.set_property('model', due_date_store)
-      renderer.set_property('text_column', 0)
-      dates = gtk.TreeViewColumn("Dates")
-      dates.pack_start(renderer, True)
-      dates.set_cell_data_func(renderer, dateformatter)
-
-      notes = gtk.TreeViewColumn("Notes", cell4)
-      notes.pack_end(cells, True)
-      notes.set_min_width(40)
-      self.tree_view.append_column(checkbox)
-      self.tree_view.append_column(prio)
-      self.tree_view.append_column(column)
-      self.tree_view.append_column(dates)
-      self.tree_view.append_column(notes)
-      self.tree_view.set_hover_selection(True)
-
-      self.tree_view.show()
-      self.ebox.show()
-      self.pull_styles_from_window()
-      self.show()
-
-   def pull_styles_from_window(self):
-      style = self.realizedparent.get_style()
-      self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
-      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
-
-   def add(self, text):
-      self.label.show()
-      self.model.set(self.model.append(), 0, text, 1, '  -  ', 3, '    ', 4, datetime.today())
-
-   def destroy_task(self, widget, index):
-      destroy = self.model.get(self.model.iter_nth_child(None, int(index)), 2)[0]
-      self.model.set_value(self.model.iter_nth_child(None, int(index)), 2, not destroy)
-      if not destroy:
-         self.persist.destroy(self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0])
-      else:
-         self.persist.save(Task(self.model.get(self.model.iter_nth_child(None, int(index)), 0)[0]))
-
 class GTasks:
    def __init__(self):
       self.persist = Persist('Default')
       self.window = gtk.Window()
       self.window.connect('destroy', self.destroy)
-      self.window.set_title('Task List')
+      self.window.set_title('Taskhat')
       self.window.set_icon_name('stock_task')
       self.window.realize()
 
@@ -293,12 +182,12 @@ class GTasks:
          self.status.set_label(HELP_STRING)
 
    def insert_task(self, task):
-      self.group_of_entry(task.text).add(task.text)
+      self.group_of_entry(task.text).add(task)
 
    def entry_done(self, widget, data=None):
       text = derive_label(self.validate_entry_text(self.entry.get_text()))[1]
       if text:
-         task = Task(text)
+         task = Task(text, datetime.today(), Task.PRIORITY_LOW)
          self.insert_task(task)
          self.persist.save(task)
          self.entry.set_text('')
