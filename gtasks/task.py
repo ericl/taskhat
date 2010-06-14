@@ -19,12 +19,12 @@ class TaskDate:
       """Returns same text as __str__, but with markup to hide extraneous text.
          This enables the combobox to match the strings."""
       if self.date is None:
-         return '<span size="0">No Date</span>'
-      return '%s/%s<span size="0"> - %s</span>' % (self.date.month, self.date.day, self.hname())
+         # emulate a horizontal dash
+         return '<span strikethrough="true" size="700">No Date</span>'
+      x = self.hname()
+      return '%s/%s - %s<span size="0">%s</span>' % (self.date.month, self.date.day, x[:3], x[3:])
 
    def hname(self):
-      if self.date is None:
-         return 'None'
       x = self.recalc_offset()
       if x == 0:
          return 'Today'

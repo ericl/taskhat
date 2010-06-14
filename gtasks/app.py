@@ -9,7 +9,7 @@ from task import Task, TaskDate
 from persist import Persist
 from taskgroup import TaskGroup
 
-HELP_STRING = ' Create a new task:'
+HELP_STRING = ' Enter a new task:'
 
 def parse_date(text):
    x = None

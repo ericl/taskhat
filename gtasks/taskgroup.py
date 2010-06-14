@@ -11,8 +11,6 @@ def togformatter(column, renderer, model, iter):
 def dateformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
    renderer.set_property('markup', task.date.markup())
-   renderer.set_property('xalign', 0.5)
-   renderer.set_property('alignment', pango.ALIGN_CENTER)
 
 def prioformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
@@ -68,10 +66,10 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       prio_store = gtk.ListStore(gobject.TYPE_STRING)
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_ADMIN))
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_HIGH))
-      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
       prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_LOW))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_MEDIUM))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_HIGH))
+      prio_store.set(prio_store.append(), 0, str(Task.PRIORITY_ADMIN))
       renderer.set_property('model', prio_store)
       renderer.set_property('text_column', 0)
       prio = gtk.TreeViewColumn("Type")
@@ -96,7 +94,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('model', due_date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
-      dates.set_min_width(35)
+      dates.set_min_width(80)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
 
