@@ -65,7 +65,7 @@ def parse_date(text):
    elif x.startswith('nex'):
       out = 'next week'
       date = TaskDate(7)
-   elif x.startswith('fut'):
+   elif x.startswith('fut') or x.startswith('lat'):
       out = 'in the future'
       date = TaskDate(TaskDate.FUTURE)
    else:
@@ -104,7 +104,7 @@ def derive_label(text):
       if ' read ' in text:
          ttype = 'Reading'
          prio = Task.PRIORITY_LOW
-      if ' final ' in text or ' midterm ' in text or ' study ' in text or ' exam ' in text:
+      if ' final ' in text or ' midterm ' in text or ' exam ' in text:
          ttype = 'Exam'
          verb = 'on'
          prio = Task.PRIORITY_HIGH

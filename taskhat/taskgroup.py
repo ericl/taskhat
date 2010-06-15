@@ -50,7 +50,11 @@ class TaskGroup(gtk.VBox):
    def sort_func(self, model, iter1, iter2):
       task1 = model.get_value(iter1, 0)
       task2 = model.get_value(iter2, 0)
-      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      if task1.date.date == TaskDate.FUTURE and task2.date.date != TaskDate.FUTURE:
+         return -1
+      elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:
+         return 1
+      x = [0 if task1.date.date is None else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
       for comp in x:
          if comp != 0:
             return comp
@@ -96,6 +100,7 @@ class TaskGroup(gtk.VBox):
       column = gtk.TreeViewColumn('Tasks')
       renderer = gtk.CellRendererText()
       renderer.set_property('editable', True)
+      renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
       column.pack_start(renderer, True)
       column.set_expand(True)
       column.set_cell_data_func(renderer, taskformatter)
