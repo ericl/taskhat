@@ -10,14 +10,57 @@ from persist import Persist
 from taskgroup import TaskGroup
 from parse import derive_label
 
-HELP_STRING = ' Enter a new task:'
+DBUS_OK = True
+
+try:
+   import dbus
+   import dbus.service
+   import dbus.mainloop.glib
+
+   dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+   sessionbus = dbus.SessionBus()
+
+   class TaskhatDBusPresence(dbus.service.Object):
+      def __init__(self, app):
+         dbus.service.Object.__init__(self, sessionbus, '/Taskhat')
+         self.dbus_name = dbus.service.BusName('org.riclian.Taskhat', sessionbus)
+         self.app = app
+
+      @dbus.service.method('org.riclian.TaskhatInterface',
+         in_signature = '', out_signature = '')
+      def Present(self):
+         print 'handled dbus "Present" call'
+         self.app.window.present()
+
+except ImportError:
+   DBUS_OK = False
+   print 'Warning: No dbus support'
+
+def run_app():
+   if DBUS_OK:
+      try:
+         sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
+      except Exception, e:
+         if 'ServiceUnknown' in str(e):
+            Taskhat().main()
+         else:
+            print e
+   else:
+      Taskhat().main()
+
 class Taskhat:
+
+   HELP_STRING = ' Enter a new task:'
+
    def __init__(self):
+      if DBUS_OK:
+         self.dbus_presence = TaskhatDBusPresence(self)
+
       self.persist = Persist('Default')
       self.window = gtk.Window()
       self.window.connect('destroy', self.destroy)
       self.window.set_title('Taskhat')
-      self.window.set_icon_name('stock_task')
+      self.window.set_icon_name('stock_calendar')
       self.window.realize()
 
       box1 = gtk.VBox()
@@ -66,7 +109,7 @@ class Taskhat:
 
       ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
-      status = self.status = gtk.Label(HELP_STRING)
+      status = self.status = gtk.Label(Taskhat.HELP_STRING)
       status.show()
       status.set_sensitive(False)
       box2.pack_start(status, False, False)
@@ -75,10 +118,14 @@ class Taskhat:
       box1.pack_start(box2, False, False)
       box1.pack_start(scrolled_window)
 
+      w, h = 530, 565
+      dx, dy = 40, 100
       self.window.add(box1)
-      self.window.set_size_request(530, 565)
+      self.window.set_size_request(w, h)
       scr = gtk.gdk.Screen().get_root_window().get_size()
-      self.window.move(scr[0] - 530 - 40, 100)
+      self.x = scr[0] - w - dx
+      self.y = dy
+      self.window.move(self.x, self.y)
 
       box2.show()
       box1.show()
@@ -110,7 +157,7 @@ class Taskhat:
          self.status.set_label(derive_label(text)[0])
       else:
          self.abutton.set_sensitive(False)
-         self.status.set_label(HELP_STRING)
+         self.status.set_label(Taskhat.HELP_STRING)
 
    def insert_task(self, task):
       TaskGroup.groups[0].smart_assign(task)
