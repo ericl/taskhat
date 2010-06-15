@@ -192,7 +192,7 @@ class TaskGroup(gtk.VBox):
                task.prefix = (' ' * (4-num)) + ('|' * num)
                self.model.row_changed(i, x.iter)
                if task.removed > 50:
-                  self.model.remove(x.iter)
+                  self.remove(x.iter)
                   self.garbage_num -= 1
                else:
                   task.removed += 1

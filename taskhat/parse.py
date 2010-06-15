@@ -34,37 +34,37 @@ def parse_date(text):
          found = False
    elif x.startswith('mon'):
       out = 'Monday'
-      date = TaskDate(0)
+      date = TaskDate(calc_offset(0))
    elif x.startswith('tue'):
       out = 'Tuesday'
-      date = TaskDate(1)
+      date = TaskDate(calc_offset(1))
    elif x.startswith('wed'):
       out = 'Wednesday'
-      date = TaskDate(2)
+      date = TaskDate(calc_offset(2))
    elif x.startswith('thu'):
       out = 'Thursday'
-      date = TaskDate(3)
+      date = TaskDate(calc_offset(3))
    elif x.startswith('fri'):
       out = 'Friday'
-      date = TaskDate(4)
+      date = TaskDate(calc_offset(4))
    elif x.startswith('sat'):
       out = 'Saturday'
-      date = TaskDate(5)
+      date = TaskDate(calc_offset(5))
    elif x.startswith('sun'):
       out = 'Sunday'
-      date = TaskDate(6)
+      date = TaskDate(calc_offset(6))
    elif x.startswith('tod') or x == 'now':
       out = 'today'
       date = TaskDate(0)
    elif x.startswith('tom'):
       out = 'tomorrow'
       date = TaskDate(1)
-   elif x.startswith('yest'):
+   elif x.startswith('yes'):
       out = 'yesterday'
       date = TaskDate(-1)
    elif x.startswith('nex'):
       out = 'next week'
-      date = TaskDate(7)
+      date = TaskDate(calc_offset(7))
    elif x.startswith('fut') or x.startswith('lat'):
       out = 'in the future'
       date = TaskDate(TaskDate.FUTURE)
