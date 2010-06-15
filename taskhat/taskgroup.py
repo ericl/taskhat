@@ -132,6 +132,7 @@ class TaskGroup(gtk.VBox):
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
+      renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
       date_store = self.date_store = gtk.ListStore(gobject.TYPE_STRING)
       date_store.set(date_store.append(), 0, "Choose Date...")
       date_store.set(date_store.append(), 0, str(TaskDate(None)))

@@ -35,11 +35,19 @@ class TaskDate:
       x = self.hname()
       if x == 'In 1 Week':
          return '%s/%s - <span size="1">In </span>1 W<span size="1">ee</span>k' % (self.date.month, self.date.day)
+      elif x == 'Today':
+         return '%s/%s - Today' % (self.date.month, self.date.day)
+      elif x == 'Tomorrow':
+         return '%s/%s - Tomorrow' % (self.date.month, self.date.day)
       return '%s/%s - %s<span size="0">%s</span>' % (self.date.month, self.date.day, x[:3], x[3:])
 
    def hname(self):
       x = self.offset()
-      if x == 7:
+      if x == 0:
+         return 'Today'
+      elif x == 1:
+         return 'Tomorrow'
+      elif x == 7:
          return 'In 1 Week'
       return self.date.strftime('%A')
 
