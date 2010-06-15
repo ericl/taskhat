@@ -124,6 +124,18 @@ class Taskhat:
       box2.show()
       box1.show()
 
+      accelgroup = gtk.AccelGroup()
+      self.window.add_accel_group(accelgroup)
+      action = gtk.Action('Quit', '_Quit me!', 'Quit the Program', gtk.STOCK_QUIT)
+      action.connect('activate', self.destroy)
+      actiongroup = gtk.ActionGroup('BasicAction')
+      actiongroup.add_action_with_accel(action, None)
+      action.set_accel_group(accelgroup)
+      menubar = gtk.MenuBar()
+      menuitem = action.create_menu_item()
+      menubar.append(menuitem)
+      box1.pack_start(menubar, False)
+
       TaskGroup.origin = scrolled_window
 
       self.persist.restore(self.insert_task)
