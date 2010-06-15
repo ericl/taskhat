@@ -280,6 +280,7 @@ class TaskGroup(gtk.VBox):
          else:
             self.remove(miter)
             self.add(task)
+         self.persist.sync()
 
       if not match:
          self.date_popup(task, finish)
