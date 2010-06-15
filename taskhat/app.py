@@ -118,14 +118,8 @@ class Taskhat:
       box1.pack_start(box2, False, False)
       box1.pack_start(scrolled_window)
 
-      w, h = 530, 565
-      dx, dy = 40, 100
       self.window.add(box1)
-      self.window.set_size_request(w, h)
-      scr = gtk.gdk.Screen().get_root_window().get_size()
-      self.x = scr[0] - w - dx
-      self.y = dy
-      self.window.move(self.x, self.y)
+      self.window.set_size_request(530, 565)
 
       box2.show()
       box1.show()
@@ -133,9 +127,15 @@ class Taskhat:
       TaskGroup.origin = scrolled_window
 
       self.persist.restore(self.insert_task)
+      self.persist.restore_geometry(self.window)
       self.window.show()
       entry.grab_focus()
       self.window.connect('notify::style', self.update_group_styles)
+
+      def save_geom(*args):
+         self.persist.save_geometry(self.window.get_position(), self.window.get_size())
+
+      self.window.connect('notify::is-active', save_geom)
 
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
