@@ -126,6 +126,11 @@ class Taskhat:
       self.entry.set_text('')
 
    def main(self):
+      try:
+         from ctypes import cdll
+         cdll.LoadLibrary('libc.so.6').prctl(15, 'taskhat', 0, 0, 0)
+      except:
+         pass
       gtk.main()
   
    def destroy(self, widget):
