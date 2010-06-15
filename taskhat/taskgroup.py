@@ -2,6 +2,8 @@ import gtk
 import gobject
 import pango
 
+from datetime import datetime
+
 from task import Task, TaskDate
 
 def escape(s):
@@ -35,6 +37,7 @@ def taskformatter(column, renderer, model, iter):
 
 class TaskGroup(gtk.VBox):
    groups = []
+   popup = None
 
    def where_it_should_go(self, task):
       assigned = TaskGroup.groups[0]
@@ -177,16 +180,16 @@ class TaskGroup(gtk.VBox):
          for i, x in enumerate(self.model):
             task = x[0]
             if task.removed:
-               num = int(5 - task.removed/2.0)
+               num = int(5 - task.removed/10.0)
                task.prefix = (' ' * (4-num)) + ('|' * num)
                self.model.row_changed(i, x.iter)
-               if task.removed > 10:
+               if task.removed > 50:
                   self.model.remove(x.iter)
                   self.garbage_num -= 1
                else:
                   task.removed += 1
          return self.garbage_num > 0
-      gobject.timeout_add(500, garbage_sweep)
+      gobject.timeout_add(100, garbage_sweep)
 
    def pull_styles_from_window(self, *args):
       style = self.realizedparent.get_style()
@@ -201,16 +204,79 @@ class TaskGroup(gtk.VBox):
       self.add(task)
       self.persist.sync()
 
+   def date_popup(self, task, finish):
+      if TaskGroup.popup:
+         TaskGroup.popup.destroy()
+
+      self.eventcount = 0
+      cal = self.cal = gtk.Calendar()
+      cal.set_display_options(gtk.CALENDAR_SHOW_HEADING | gtk.CALENDAR_SHOW_WEEK_NUMBERS | gtk.CALENDAR_SHOW_DAY_NAMES)
+      if task.date.date is not None and task.date.date != TaskDate.FUTURE:
+         cal.select_month(task.date.date.month - 1, task.date.date.year)
+         cal.select_day(task.date.date.day)
+      cal.show()
+
+      popup = TaskGroup.popup = gtk.Window(gtk.WINDOW_POPUP)
+      frame = gtk.Frame()
+      frame.set_property('border_width', 5)
+      frame.add(cal)
+      frame.show()
+      popup.add(frame)
+      pos = TaskGroup.origin.get_property('window').get_origin()
+      popup.move(pos[0], pos[1])
+      popup.show()
+      popup.grab_focus()
+
+      def destroy_cal(*args):
+         popup.destroy()
+
+      def cal_key_press(widget, args):
+         if args.keyval in (65307, 32, 65293): # XXX should find keyvals
+            destroy_cal()
+
+      def cal_selected(cal):
+         self.eventcount += 1
+         if self.eventcount == 1:
+            cd = cal.get_date()
+            d = datetime(cd[0], cd[1]+1, cd[2])
+            task.date = TaskDate(date=d)
+            finish()
+            destroy_cal()
+         else:
+            self.eventcount = 0
+
+      def cal_month_changed(*args):
+         self.eventcount += 1
+
+      gtk.gdk.pointer_grab(popup.get_property('window'), True)
+      cal.grab_add()
+
+      self.realizedparent.connect('button-press-event', destroy_cal)
+      frame.connect('key-press-event', cal_key_press)
+      cal.connect('month-changed', cal_month_changed)
+      cal.connect('day-selected', cal_selected)
+
    def date_changed(self, renderer, path, iter):
       miter = self.model.iter_nth_child(None, int(path))
       task = self.model.get_value(miter, 0)
       value = self.date_store.get_value(iter, 0)
-      task.date = task.match_date(value)
-      where = self.where_it_should_go(task)
-      if where != self:
-         where.add(task)
-         self.remove(miter)
-      self.persist.sync()
+      match = task.match_date(value)
+
+      def finish():
+         where = self.where_it_should_go(task)
+         if where != self:
+            where.add(task)
+            self.remove(miter)
+         else:
+            self.remove(miter)
+            self.add(task)
+
+      if not match:
+         self.date_popup(task, finish)
+         return
+      else:
+         task.date = match
+         finish()
 
    def text_changed(self, renderer, path, text):
       task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)

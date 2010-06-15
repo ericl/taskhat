@@ -97,6 +97,6 @@ class Task:
       n = TaskDate(TaskDate.FUTURE)
       if value == str(n):
          return n
-      assert False
+      return None
 
 # vim: et sw=3
