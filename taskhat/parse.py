@@ -22,13 +22,13 @@ def parse_date(text):
          a = datetime(today.year, int(x[0]), int(x[1]))
          b = datetime(today.year + 1, int(x[0]), int(x[1]))
          if (a - today).days < -30:
-            out = "%s next year" % b.strftime("%b %d")
+            out = "%s next year" % b.strftime("%B %d")
             date = TaskDate(date=b)
          elif (a - today).days < 0:
-            out = "%s (past)" % a.strftime("%b %d")
+            out = "%s (past)" % a.strftime("%B %d")
             date = TaskDate(date=a)
          else:
-            out = a.strftime("%b %d")
+            out = a.strftime("%B %d")
             date = TaskDate(date=a)
       except:
          found = False
