@@ -92,20 +92,22 @@ class TaskGroup(gtk.VBox):
       self.pack_start(self.tree_view, False, False)
       self.tree_view.set_headers_visible(False)
 
-      cell0 = gtk.CellRendererToggle()
-      cell0.connect('toggled', self.destroy_task)
-      cell4 = gtk.CellRendererPixbuf()
-
-      renderer = gtk.CellRendererText()
       checkbox = gtk.TreeViewColumn('Done')
+      renderer = gtk.CellRendererText()
+      renderer.connect('editing-started', self.destroy_cal)
       checkbox.pack_start(renderer, True)
-      checkbox.pack_end(cell0, False)
-      checkbox.set_min_width(45)
       checkbox.set_cell_data_func(renderer, prefixformatter)
-      checkbox.set_cell_data_func(cell0, togformatter)
+
+      renderer = gtk.CellRendererToggle()
+      renderer.connect('toggled', self.destroy_cal)
+      renderer.connect('toggled', self.destroy_task)
+      checkbox.pack_end(renderer, False)
+      checkbox.set_cell_data_func(renderer, togformatter)
+      checkbox.set_min_width(45)
 
       column = gtk.TreeViewColumn('Tasks')
       renderer = gtk.CellRendererText()
+      renderer.connect('editing-started', self.destroy_cal)
       renderer.set_property('editable', True)
       renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
       column.pack_start(renderer, True)
@@ -114,6 +116,7 @@ class TaskGroup(gtk.VBox):
       renderer.connect('edited', self.text_changed)
 
       renderer = gtk.CellRendererCombo()
+      renderer.connect('editing-started', self.destroy_cal)
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       prio_store = self.prio_store = gtk.ListStore(gobject.TYPE_STRING)
@@ -130,6 +133,7 @@ class TaskGroup(gtk.VBox):
       renderer.connect('changed', self.prio_changed)
 
       renderer = gtk.CellRendererCombo()
+      renderer.connect('editing-started', self.destroy_cal)
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
       date_store = self.date_store = gtk.ListStore(gobject.TYPE_STRING)
@@ -152,9 +156,13 @@ class TaskGroup(gtk.VBox):
       dates.set_cell_data_func(renderer, dateformatter)
       renderer.connect('changed', self.date_changed)
 
-      notes = gtk.TreeViewColumn("Notes", cell4)
-      cells = gtk.CellRendererText()
-      notes.pack_end(cells, True)
+      renderer = gtk.CellRendererPixbuf()
+      renderer.connect('editing-started', self.destroy_cal)
+      notes = gtk.TreeViewColumn("Notes", renderer)
+
+      renderer = gtk.CellRendererText()
+      renderer.connect('editing-started', self.destroy_cal)
+      notes.pack_end(renderer, True)
       notes.set_min_width(40)
 
       self.tree_view.append_column(checkbox)
@@ -190,6 +198,12 @@ class TaskGroup(gtk.VBox):
                   task.removed += 1
          return self.garbage_num > 0
       gobject.timeout_add(100, garbage_sweep)
+
+   def destroy_cal(self, *args):
+      if TaskGroup.popup:
+         TaskGroup.popup.destroy()
+         TaskGroup.popup = None
+      return True
 
    def pull_styles_from_window(self, *args):
       style = self.realizedparent.get_style()
@@ -227,12 +241,9 @@ class TaskGroup(gtk.VBox):
       popup.show()
       popup.grab_focus()
 
-      def destroy_cal(*args):
-         popup.destroy()
-
       def cal_key_press(widget, args):
          if args.keyval in (65307, 32, 65293): # XXX should find keyvals
-            destroy_cal()
+            self.destroy_cal()
 
       def cal_selected(cal):
          self.eventcount += 1
@@ -241,7 +252,7 @@ class TaskGroup(gtk.VBox):
             d = datetime(cd[0], cd[1]+1, cd[2])
             task.date = TaskDate(date=d)
             finish()
-            destroy_cal()
+            self.destroy_cal()
          else:
             self.eventcount = 0
 
@@ -249,9 +260,8 @@ class TaskGroup(gtk.VBox):
          self.eventcount += 1
 
       gtk.gdk.pointer_grab(popup.get_property('window'), True)
-      cal.grab_add()
 
-      self.realizedparent.connect('button-press-event', destroy_cal)
+      self.realizedparent.connect('button-press-event', self.destroy_cal)
       frame.connect('key-press-event', cal_key_press)
       cal.connect('month-changed', cal_month_changed)
       cal.connect('day-selected', cal_selected)

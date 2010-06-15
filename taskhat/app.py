@@ -60,7 +60,7 @@ class Taskhat:
       self.window = gtk.Window()
       self.window.connect('destroy', self.destroy)
       self.window.set_title('Taskhat')
-      self.window.set_icon_name('stock_calendar')
+      self.window.set_icon_name('stock_notes')
       self.window.realize()
 
       box1 = gtk.VBox()
