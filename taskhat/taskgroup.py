@@ -1,13 +1,11 @@
 import gtk
 import gobject
 import pango
-import urllib
 
 from task import Task, TaskDate
 
 def escape(s):
-   # this actually doesn't work well.. we need html char entities
-   return urllib.quote(s)
+   return s.replace('<', '&lt;').replace('>', '&gt;')
 
 def togformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
@@ -54,7 +52,7 @@ class TaskGroup(gtk.VBox):
          return -1
       elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:
          return 1
-      x = [0 if task1.date.date is None else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
       for comp in x:
          if comp != 0:
             return comp
