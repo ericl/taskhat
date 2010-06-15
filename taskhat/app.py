@@ -77,6 +77,8 @@ class Taskhat:
 
       self.window.add(box1)
       self.window.set_size_request(530, 565)
+      scr = gtk.gdk.Screen().get_root_window().get_size()
+      self.window.move(scr[0] - 530 - 40, 100)
 
       box2.show()
       box1.show()
