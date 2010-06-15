@@ -31,7 +31,7 @@ class TaskDate:
          # emulate a horizontal dash
          return '<span strikethrough="true" size="700">No Date</span>'
       elif self.date == TaskDate.FUTURE:
-         return 'Future'
+         return '<span size="1">In the </span>Future'
       x = self.hname()
       if x == 'In 1 Week':
          return '%s/%s - <span size="1">In </span>1 W<span size="1">ee</span>k' % (self.date.month, self.date.day)
@@ -47,7 +47,7 @@ class TaskDate:
       if self.date is None:
          return 'No Date'
       elif self.date == TaskDate.FUTURE:
-         return 'Future'
+         return 'In the Future'
       return '%s/%s - %s' % (self.date.month, self.date.day, self.hname())
 
 class Priority:
