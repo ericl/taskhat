@@ -73,6 +73,7 @@ class Task:
       self.date = date
       self.prio = prio
       self.removed = False
+      self.prefix = ''
 
    def prio_match(self, text):
       if text == Task.PRIORITY_LOW.name:

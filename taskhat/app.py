@@ -76,6 +76,8 @@ class Taskhat:
       box1.pack_start(scrolled_window)
 
       self.window.add(box1)
+#      self.window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_UTILITY)
+#      self.window.set_keep_above(True)
       self.window.set_size_request(530, 565)
       scr = gtk.gdk.Screen().get_root_window().get_size()
       self.window.move(scr[0] - 530 - 40, 100)

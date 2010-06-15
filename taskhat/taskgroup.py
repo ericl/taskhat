@@ -15,6 +15,10 @@ def dateformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
    renderer.set_property('markup', task.date.markup())
 
+def prefixformatter(column, renderer, model, iter):
+   task = model.get_value(iter, 0)
+   renderer.set_property('text', task.prefix)
+
 def prioformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
    renderer.set_property('markup', task.prio.symbol())
@@ -85,14 +89,16 @@ class TaskGroup(gtk.VBox):
       self.pack_start(self.tree_view, False, False)
       self.tree_view.set_headers_visible(False)
 
-      cells = gtk.CellRendererText()
       cell0 = gtk.CellRendererToggle()
       cell0.connect('toggled', self.destroy_task)
       cell4 = gtk.CellRendererPixbuf()
+
+      renderer = gtk.CellRendererText()
       checkbox = gtk.TreeViewColumn('Done')
-      checkbox.pack_start(cells, True)
+      checkbox.pack_start(renderer, True)
       checkbox.pack_end(cell0, False)
       checkbox.set_min_width(45)
+      checkbox.set_cell_data_func(renderer, prefixformatter)
       checkbox.set_cell_data_func(cell0, togformatter)
 
       column = gtk.TreeViewColumn('Tasks')
@@ -144,6 +150,7 @@ class TaskGroup(gtk.VBox):
       renderer.connect('changed', self.date_changed)
 
       notes = gtk.TreeViewColumn("Notes", cell4)
+      cells = gtk.CellRendererText()
       notes.pack_end(cells, True)
       notes.set_min_width(40)
 
@@ -159,6 +166,27 @@ class TaskGroup(gtk.VBox):
       self.pull_styles_from_window()
       self.show()
       self.realizedparent.connect('notify::style', self.pull_styles_from_window)
+      self.garbage_num = 0
+
+   def garbage_sweep_init(self):
+      if self.garbage_num:
+         self.garbage_num += 1
+         return
+      self.garbage_num += 1
+      def garbage_sweep():
+         for i, x in enumerate(self.model):
+            task = x[0]
+            if task.removed:
+               num = int(5 - task.removed/2.0)
+               task.prefix = (' ' * (4-num)) + ('|' * num)
+               self.model.row_changed(i, x.iter)
+               if task.removed > 10:
+                  self.model.remove(x.iter)
+                  self.garbage_num -= 1
+               else:
+                  task.removed += 1
+         return self.garbage_num > 0
+      gobject.timeout_add(500, garbage_sweep)
 
    def pull_styles_from_window(self, *args):
       style = self.realizedparent.get_style()
@@ -201,8 +229,14 @@ class TaskGroup(gtk.VBox):
          self.label.hide()
 
    def destroy_task(self, widget, path):
-      task = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
+      miter = self.model.iter_nth_child(None, int(path))
+      task = self.model.get_value(miter, 0)
       task.removed = not task.removed
+      if task.removed:
+         self.garbage_sweep_init()
+      else:
+         task.prefix = ''
+         self.garbage_num -= 1
       self.persist.sync()
 
 # vim: et sw=3
