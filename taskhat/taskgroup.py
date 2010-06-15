@@ -1,8 +1,13 @@
 import gtk
 import gobject
 import pango
+import urllib
 
 from task import Task, TaskDate
+
+def escape(s):
+   # this actually doesn't work well.. we need html char entities
+   return urllib.quote(s)
 
 def togformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
@@ -21,7 +26,7 @@ def prioformatter(column, renderer, model, iter):
 def taskformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
    if task.removed:
-      renderer.set_property('markup', '<span strikethrough="true">%s</span>' % task.text)
+      renderer.set_property('markup', '<span strikethrough="true">%s</span>' % escape(task.text))
    else:
       renderer.set_property('text', task.text)
 

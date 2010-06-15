@@ -2,8 +2,10 @@ import datetime
 
 class TaskDate:
    FUTURE = 999999
-   def __init__(self, offset_days):
-      if offset_days is None:
+   def __init__(self, offset_days=None, date=None):
+      if date:
+         self.date = date
+      elif offset_days is None:
          self.date = None
       elif offset_days is TaskDate.FUTURE:
          self.date = TaskDate.FUTURE
