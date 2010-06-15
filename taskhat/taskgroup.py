@@ -157,6 +157,10 @@ class TaskGroup(gtk.VBox):
       notes = gtk.TreeViewColumn("Notes", renderer)
       self.tree_view.connect('button-press-event', self.destroy_cal)
 
+      def activate_row(treeview, path, column):
+         pass # TODO hook up to pixbuf for NOTE TAKING
+      self.tree_view.connect('row-activated', activate_row)
+
       renderer = gtk.CellRendererText()
       notes.pack_end(renderer, True)
       notes.set_min_width(40)

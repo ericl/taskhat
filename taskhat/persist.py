@@ -32,10 +32,10 @@ class Persist:
    def restore(self, f_insert):
       try:
          with open(self.path, 'r') as f:
-            self.tasks = loads(f.read())
+            self.tasks = filter(lambda t: not t.removed, loads(f.read()))
+#            self.tasks = filter(lambda t: True, loads(f.read()))
             for task in self.tasks:
-               if not task.removed:
-                  f_insert(task)
+               f_insert(task)
       except IOError:
          pass
 
