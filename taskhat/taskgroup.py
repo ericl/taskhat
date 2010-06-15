@@ -7,7 +7,7 @@ from datetime import datetime
 from task import Task, TaskDate
 
 def escape(s):
-   return s.replace('<', '&lt;').replace('>', '&gt;')
+   return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
 
 def togformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
