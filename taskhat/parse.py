@@ -79,10 +79,8 @@ def end_match_f(s):
 
 def mid_match_f(sl):
    def m(t):
-      print t
       for s in sl:
          if s in t:
-            print "%s in %s" % (s, t)
             return True
       return False
    return m
