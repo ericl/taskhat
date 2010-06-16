@@ -74,50 +74,50 @@ def parse_date(text):
       text = ' '.join(text.split()[:-1])
    return out, text, date
 
+def end_match_f(s):
+   return lambda t: t.endswith(s + ' ')
+
+def mid_match_f(sl):
+   def m(t):
+      print t
+      for s in sl:
+         if s in t:
+            print "%s in %s" % (s, t)
+            return True
+      return False
+   return m
+
+def stripsymb(text):
+   return text.strip()[:-1]
+
+def echo(text):
+   return text
+
+TASK_TYPES = [
+   (end_match_f('!'), 'Important task due', Task.PRIORITY_HIGH, stripsymb),
+   (end_match_f('='), 'Regular task due', Task.PRIORITY_MEDIUM, stripsymb),
+   (end_match_f('-'), 'Idle task due', Task.PRIORITY_LOW, stripsymb),
+   (end_match_f('*'), 'Administrivia due', Task.PRIORITY_ADMIN, stripsymb),
+   (mid_match_f([' hw ', ' homework ']), 'Homework due', Task.PRIORITY_MEDIUM, echo),
+   (mid_match_f([' proj']), 'Project due', Task.PRIORITY_HIGH, echo),
+   (mid_match_f([' read ']), 'Reading due', Task.PRIORITY_LOW, echo),
+   (mid_match_f([' final ', ' midterm ', ' exam ']), 'Exam on', Task.PRIORITY_HIGH, echo),
+   (mid_match_f([' quiz ']), 'Quiz on', Task.PRIORITY_MEDIUM, echo),
+   (mid_match_f([' turn in ', ' submit ']), 'Administrivia due', Task.PRIORITY_ADMIN, echo),
+   (mid_match_f([' meet', ' go to ']), 'Appointment on', Task.PRIORITY_ADMIN, echo),
+]
+
 def derive_label(text):
-   ttype = '<?>'
-   parse = False
-   verb = 'due'
+   ttype = '<?> due'
    prio = Task.PRIORITY_LOW
-   if text.endswith('!'):
-      ttype = 'Important task'
-      prio = Task.PRIORITY_HIGH
-   elif text.endswith('='):
-      ttype = 'Regular task'
-      prio = Task.PRIORITY_MEDIUM
-   elif text.endswith('-'):
-      ttype = 'Idle task'
-      prio = Task.PRIORITY_LOW
-   elif text.endswith('*'):
-      ttype = 'Administrivia'
-      prio = Task.PRIORITY_ADMIN
-   else:
-      parse = True
-   if parse:
-      text = ' ' + text + ' '
-      if ' hw ' in text or ' homework ' in text:
-         ttype = 'Homework'
-         prio = Task.PRIORITY_MEDIUM
-      if ' proj' in text:
-         ttype = 'Project'
-         prio = Task.PRIORITY_HIGH
-      if ' read ' in text:
-         ttype = 'Reading'
-         prio = Task.PRIORITY_LOW
-      if ' final ' in text or ' midterm ' in text or ' exam ' in text:
-         ttype = 'Exam'
-         verb = 'on'
-         prio = Task.PRIORITY_HIGH
-      if ' quiz ' in text:
-         ttype = 'Quiz'
-         verb = 'on'
-         prio = Task.PRIORITY_MEDIUM
-      if ' turn in ' in text:
-         ttype = 'Administrivia'
-         prio = Task.PRIORITY_ADMIN
-   else:
-      text = text[:-1]
+   text = ' ' + text + ' '
+   for T in TASK_TYPES:
+      if T[0](text):
+         ttype = T[1]
+         prio = T[2]
+         text = T[3](text)
+         break
    out, text, date = parse_date(text)
-   return (" %s %s %s" % (ttype, verb, out)), text.strip(), date, prio
+   return (" %s %s" % (ttype, out)), text.strip(), date, prio
 
 # vim: et sw=3
