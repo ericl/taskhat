@@ -29,7 +29,7 @@ try:
       @dbus.service.method('org.riclian.TaskhatInterface',
          in_signature = '', out_signature = '')
       def Present(self):
-         print 'handled dbus "Present" call'
+         self.app.window.show()
          self.app.window.present()
 
 except ImportError:
@@ -58,7 +58,7 @@ class Taskhat:
 
       self.persist = Persist('Default')
       self.window = gtk.Window()
-      self.window.connect('destroy', self.destroy)
+      self.window.connect('delete_event', self.close)
       self.window.set_title('Taskhat')
       self.window.set_icon_name('stock_notes')
       self.window.realize()
@@ -70,14 +70,14 @@ class Taskhat:
       abox = gtk.HBox()
       image = gtk.Image()
       image.set_from_stock(gtk.STOCK_ADD, gtk.ICON_SIZE_MENU)
-      label = gtk.Label("Add")
+      label = gtk.Label('Add')
       abox.pack_start(image, False, False, 0)
       abox.pack_start(label, False, False, 0)
       abox.show()
       image.show()
       label.show()
 
-      abutton = self.abutton = gtk.ToolButton(abox, "Add")
+      abutton = self.abutton = gtk.ToolButton(abox, 'Add')
       abutton.set_sensitive(False)
       abutton.connect('clicked', self.entry_done)
       abutton.show()
@@ -98,12 +98,12 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      TaskGroup("Undated", self.window, self.persist, (None, -TaskDate.FUTURE), True)
-      TaskGroup("Overdue", self.window, self.persist, (-TaskDate.FUTURE, -1))
-      TaskGroup("Today", self.window, self.persist, (0, 0))
-      TaskGroup("Tomorrow", self.window, self.persist, (1, 1))
-      TaskGroup("Next 7 Days", self.window, self.persist, (2, 7))
-      TaskGroup("Future", self.window, self.persist, (8, None))
+      TaskGroup('Undated', self.window, self.persist, (None, -TaskDate.FUTURE), True)
+      TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE, -1))
+      TaskGroup('Today', self.window, self.persist, (0, 0))
+      TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
+      TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
+      TaskGroup('Future', self.window, self.persist, (8, None))
       for group in TaskGroup.groups:
          box3.pack_start(group, False, False)
 
@@ -127,7 +127,7 @@ class Taskhat:
       accelgroup = gtk.AccelGroup()
       self.window.add_accel_group(accelgroup)
       action = gtk.Action('Quit', '_Quit me!', 'Quit the Program', gtk.STOCK_QUIT)
-      action.connect('activate', self.destroy)
+      action.connect('activate', self.close)
       actiongroup = gtk.ActionGroup('BasicAction')
       actiongroup.add_action_with_accel(action, None)
       action.set_accel_group(accelgroup)
@@ -192,7 +192,7 @@ class Taskhat:
          pass
       gtk.main()
   
-   def destroy(self, widget):
+   def close(self, widget, data=None):
       gtk.main_quit()
 
 # vim: et sw=3
