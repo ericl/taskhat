@@ -3,7 +3,7 @@ from task import TaskDate, Task
 from datetime import datetime
 
 def calc_offset(weekday):
-   return weekday - datetime.today().weekday()
+   return (weekday - datetime.today().weekday()) % 7
 
 def parse_date(text):
    x = None
