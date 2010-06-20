@@ -65,10 +65,10 @@ class TaskGroup(gtk.VBox):
             return comp
       return 0
 
-   def __init__(self, name, realizedparent, persist, daterange, hide=False):
+   def __init__(self, name, realizedparent, persist, daterange, top=False):
       super(gtk.VBox, self).__init__()
       TaskGroup.groups.append(self)
-      self.top = hide
+      self.top = top
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
@@ -82,7 +82,9 @@ class TaskGroup(gtk.VBox):
 
       self.ebox.add(self.label)
 
-      if self.top:
+      if self.top == 2:
+         self.label.modify_font(pango.FontDescription('Sans 10'))
+      elif self.top:
          self.label.modify_font(pango.FontDescription('Sans 15'))
       else:
          self.label.modify_font(pango.FontDescription('Sans Bold 15'))

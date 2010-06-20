@@ -71,7 +71,7 @@ class Priority:
       return self.name
 
 class Task:
-   PRIORITY_ADMIN = Priority(0, '*', '*')
+   PRIORITY_ADMIN = Priority(0, '+', '+')
    PRIORITY_HIGH = Priority(1, '1', '1')
    PRIORITY_MEDIUM = Priority(2, '2', '2')
    PRIORITY_LOW = Priority(3, '-', '-')
