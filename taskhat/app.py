@@ -4,6 +4,7 @@ import pygtk
 pygtk.require('2.0')
 
 import gtk
+import pango
 
 from task import Task, TaskDate
 from persist import Persist
@@ -133,9 +134,14 @@ class Taskhat:
       ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
       status = self.status = gtk.Label(Taskhat.HELP_STRING)
+      status.set_alignment(0,.5)
+      status.set_ellipsize(pango.ELLIPSIZE_END)
       status.show()
       status.set_sensitive(False)
-      box2.pack_start(status, False, False)
+      box2.pack_start(status, True, True)
+      sep = gtk.Label(' ')
+      sep.show()
+      box2.pack_start(sep, False, False)
       sep = gtk.VSeparator()
       sep.show()
       box2.pack_end(tool, False, False)

@@ -22,13 +22,13 @@ def parse_date(text):
          a = datetime(today.year, int(x[0]), int(x[1]))
          b = datetime(today.year + 1, int(x[0]), int(x[1]))
          if (a - today).days < -30:
-            out = "%s next year" % b.strftime("%B %d")
+            out = "%s next year" % b.strftime("%b %d")
             date = TaskDate(date=b)
          elif (a - today).days < 0:
-            out = "%s (past)" % a.strftime("%B %d")
+            out = "%s (past)" % a.strftime("%b %d")
             date = TaskDate(date=a)
          else:
-            out = a.strftime("%B %d")
+            out = a.strftime("%b %d")
             date = TaskDate(date=a)
       except:
          found = False
@@ -92,7 +92,7 @@ def echo(text):
    return text
 
 TASK_TYPES = [
-   (end_match_f('!'), 'Important task due', Task.PRIORITY_HIGH, stripsymb),
+   (end_match_f('!'), 'Impt task due', Task.PRIORITY_HIGH, stripsymb),
    (end_match_f('='), 'Regular task due', Task.PRIORITY_MEDIUM, stripsymb),
    (end_match_f('-'), 'Idle task due', Task.PRIORITY_LOW, stripsymb),
    (end_match_f('+'), 'Administrivia due', Task.PRIORITY_ADMIN, stripsymb),
