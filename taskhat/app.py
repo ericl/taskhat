@@ -82,6 +82,29 @@ class Taskhat:
       abutton.connect('clicked', self.entry_done)
       abutton.show()
 
+      abox = gtk.HBox()
+      image = gtk.Arrow(gtk.ARROW_DOWN, gtk.SHADOW_IN)
+      abox.pack_start(image, False, False, 0)
+      abox.show()
+      image.show()
+      tool = gtk.ToolButton(abox, 'Tools')
+
+      def inspect(*a):
+         print a
+
+      popup_menu = gtk.Menu()
+      for s in ['Edit Reminders', 'Revert Changes', 'Help', 'About']:
+         x = gtk.MenuItem(s)
+         x.show()
+         popup_menu.append(x)
+      popup_menu.attach_to_widget(tool, None)
+      popup_menu.show()
+
+      def tool_menu(widget):
+         popup_menu.popup(None, None, None, 1, 0)
+
+      tool.connect('clicked', tool_menu)
+
       entry = self.entry = gtk.Entry()
       entry.connect('changed', self.entry_changed)
       entry.connect('activate', self.entry_done)
@@ -113,7 +136,12 @@ class Taskhat:
       status.show()
       status.set_sensitive(False)
       box2.pack_start(status, False, False)
+      sep = gtk.VSeparator()
+      sep.show()
+      box2.pack_end(tool, False, False)
+      box2.pack_end(sep, False, False)
       box2.pack_end(abutton, False, False)
+      tool.show()
       box2.pack_end(entry, False, False)
       box1.pack_start(box2, False, False)
       box1.pack_start(scrolled_window)
