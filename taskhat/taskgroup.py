@@ -50,6 +50,7 @@ class TaskGroup(gtk.VBox):
       self.top = top
       self.title = name
       self.events = events
+      self.eventbuf = ''
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
@@ -308,10 +309,10 @@ class TaskGroup(gtk.VBox):
             return True
       return False
 
-   def get_events(self):
-      buf = ''
+   def update_eventbuf(self):
       if not self.events:
-         return buf
+         return
+      buf = ''
       for event in self.persist.events:
          if event.occurs_in(self.daterange):
             if buf:
@@ -319,40 +320,33 @@ class TaskGroup(gtk.VBox):
             buf += ' \xe2\x80\xa2 ' + event.text
       if buf:
          buf += SPACER_NO_NEWLINE
-      return buf
+      self.eventbuf = buf
 
    def add(self, task):
       self.model.set(self.model.append(), 0, task)
-      self.update(consider_events=False)
+      self.update(events_changed=False)
 
-   def update(self, consider_events=True):
+   def update(self, events_changed=True):
+      if events_changed:
+         self.update_eventbuf()
       have_tasks = len(self.model)
-      if not consider_events:
-         if have_tasks:
-            self.label.show()
-         else:
-            self.label.hide()
-         return
-      my_events = self.get_events()
-      visible = have_tasks or my_events
+      visible = have_tasks or self.eventbuf
       if visible:
          self.label.show()
-         self.update_title(my_events)
+         self.update_title(self.eventbuf)
       else:
          self.label.hide()
 
-   def update_title(self, my_events=None):
+   def update_title(self, eventbuf=None):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'
       title = self.title
-      if self.events:
-         if my_events is None:
-            my_events = self.get_events()
-      if my_events:
-         self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>' % (desc, title, SPACER, 'Sans 10', self.realizedparent.get_style().fg[gtk.STATE_NORMAL], my_events))
+      self.update_eventbuf()
+      if self.eventbuf:
+         self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>' % (desc, title, SPACER, 'Sans 10', self.realizedparent.get_style().fg[gtk.STATE_NORMAL], self.eventbuf))
       else:
          self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
       style = self.realizedparent.get_style()
-      if my_events:
+      if eventbuf:
          self.ebox.modify_bg(gtk.STATE_NORMAL,
             blend(style.base[gtk.STATE_NORMAL], style.bg[gtk.STATE_SELECTED]))
       else:
@@ -360,7 +354,7 @@ class TaskGroup(gtk.VBox):
 
    def remove(self, miter):
       self.model.remove(miter)
-      self.update(consider_events=False)
+      self.update(events_changed=False)
 
    def destroy_task(self, widget, path):
       miter = self.model.iter_nth_child(None, int(path))
