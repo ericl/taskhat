@@ -342,11 +342,11 @@ class TaskGroup(gtk.VBox):
       visible = have_tasks or self.eventbuf
       if visible:
          self.label.show()
-         self.update_title(self.eventbuf)
+         self.update_title()
       else:
          self.label.hide()
 
-   def update_title(self, eventbuf=None):
+   def update_title(self):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'
       title = self.title
       self.update_eventbuf()
@@ -355,7 +355,7 @@ class TaskGroup(gtk.VBox):
       else:
          self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
       style = self.realizedparent.get_style()
-      if eventbuf:
+      if self.eventbuf:
          self.ebox.modify_bg(gtk.STATE_NORMAL,
             blend(style.base[gtk.STATE_NORMAL], style.bg[gtk.STATE_SELECTED]))
       else:
