@@ -94,8 +94,11 @@ class Taskhat:
          print a
 
       popup_menu = gtk.Menu()
-      for s in ['Edit Reminders', 'Revert Changes', 'Help', 'About']:
-         x = gtk.MenuItem(s)
+      for s in ['Recurring Events', 'Rollback Changes', None, 'Help', 'About']:
+         if s:
+            x = gtk.MenuItem(s)
+         else:
+            x = gtk.SeparatorMenuItem()
          x.show()
          popup_menu.append(x)
       popup_menu.attach_to_widget(tool, None)
@@ -124,7 +127,7 @@ class Taskhat:
 
       TaskGroup('Undated', self.window, self.persist, (None, -TaskDate.FUTURE), True)
       TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE, -1))
-      TaskGroup('Today', self.window, self.persist, (0, 0))
+      TaskGroup('Today', self.window, self.persist, (0, 0), events=True)
       TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
       TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
       TaskGroup('Future', self.window, self.persist, (8, None))
@@ -172,7 +175,7 @@ class Taskhat:
 
       TaskGroup.origin = scrolled_window
 
-      self.persist.restore(self.insert_task)
+      self.persist.restore(self.insert_task, self.update_events)
       self.persist.restore_geometry(self.window)
       self.window.show()
       entry.grab_focus()
@@ -182,6 +185,10 @@ class Taskhat:
          self.persist.save_geometry(self.window.get_position(), self.window.get_size())
 
       self.window.connect('notify::is-active', save_geom)
+
+   def update_events(self):
+      for g in TaskGroup.groups:
+         g.update()
 
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])

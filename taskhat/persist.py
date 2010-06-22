@@ -1,12 +1,15 @@
 import os
 from pickle import loads, dumps
 
+from datetime import datetime
+
 class Persist:
    def __init__(self, name):
       self.name = name
       self.path = os.environ['HOME'] + '/.taskhat-persist-' + self.name
       self.pospath = os.environ['HOME'] + '/.taskhat-geom'
       self.tasks = []
+      self.events = []
       self.pos = None
       self.size = None
 
@@ -32,15 +35,22 @@ class Persist:
          pass
 
    def sync(self):
-      with open(self.path, 'w') as f:
-         f.write(dumps(self.tasks))
+      swap = self.path + '~'
+      backup = self.path + '.backup-%d' % datetime.today().weekday()
+      with open(swap, 'w') as s:
+         s.write(dumps({'tasks': self.tasks, 'events': self.events}))
+         os.rename(self.path, backup)
+         os.rename(swap, self.path)
 
-   def restore(self, f_insert):
+   def restore(self, f_insert, f_notify_events_loaded):
       try:
          with open(self.path, 'r') as f:
-            self.tasks = filter(lambda t: not t.removed, loads(f.read()))
+            saved = loads(f.read())
+            self.tasks = filter(lambda t: not t.removed, saved.get('tasks', []))
             for task in self.tasks:
                f_insert(task)
+            self.events = saved.get('events', [])
+            f_notify_events_loaded()
       except IOError:
          pass
 

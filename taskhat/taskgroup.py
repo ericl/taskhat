@@ -6,8 +6,14 @@ from datetime import datetime
 
 from task import Task, TaskDate
 
+SPACER = '<span size="900">\n\n</span>'
+SPACER_NO_NEWLINE = '<span size="500">\n </span>'
+
 def escape(s):
    return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+
+def blend(a, b, A=.8, B=.2):
+   return gtk.gdk.Color(int(A*a.red + B*b.red), int(A*a.green + B*b.green), int(A*a.blue + B*b.blue))
 
 def togformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
@@ -34,47 +40,22 @@ def taskformatter(column, renderer, model, iter):
    else:
       renderer.set_property('text', task.text)
 
-
 class TaskGroup(gtk.VBox):
    groups = []
    popup = None
 
-   def where_it_should_go(self, task):
-      assigned = TaskGroup.groups[0]
-      offset = task.date.offset()
-      for group in TaskGroup.groups:
-         if ((group.daterange[0] is None) or group.daterange[0] <= offset) and \
-            ((group.daterange[1] is None) or group.daterange[1] >= offset):
-            assigned = group
-            break
-      return assigned
-
-   def smart_assign(self, task):
-      self.where_it_should_go(task).add(task)
-
-   def sort_func(self, model, iter1, iter2):
-      task1 = model.get_value(iter1, 0)
-      task2 = model.get_value(iter2, 0)
-      if task1.date.date == TaskDate.FUTURE and task2.date.date != TaskDate.FUTURE:
-         return -1
-      elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:
-         return 1
-      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
-      for comp in x:
-         if comp != 0:
-            return comp
-      return 0
-
-   def __init__(self, name, realizedparent, persist, daterange, top=False):
+   def __init__(self, name, realizedparent, persist, daterange, top=False, events=False):
       super(gtk.VBox, self).__init__()
       TaskGroup.groups.append(self)
       self.top = top
+      self.title = name
+      self.events = events
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
       self.tree_view = gtk.TreeView(self.model)
       self.ebox = gtk.EventBox()
-      self.label = gtk.Label(name)
+      self.label = gtk.Label()
       self.realizedparent = realizedparent
 
       self.model.set_sort_func(42, self.sort_func)
@@ -82,12 +63,6 @@ class TaskGroup(gtk.VBox):
 
       self.ebox.add(self.label)
 
-      if self.top == 2:
-         self.label.modify_font(pango.FontDescription('Sans 10'))
-      elif self.top:
-         self.label.modify_font(pango.FontDescription('Sans 15'))
-      else:
-         self.label.modify_font(pango.FontDescription('Sans Bold 15'))
       self.label.set_alignment(0,0)
       self.label.set_padding(3,3)
       self.pack_start(self.ebox, False, False)
@@ -181,6 +156,33 @@ class TaskGroup(gtk.VBox):
       self.realizedparent.connect('notify::style', self.pull_styles_from_window)
       self.garbage_num = 0
 
+   def where_it_should_go(self, task):
+      assigned = TaskGroup.groups[0]
+      offset = task.date.offset()
+      for group in TaskGroup.groups:
+         if ((group.daterange[0] is None) or group.daterange[0] <= offset) and \
+            ((group.daterange[1] is None) or group.daterange[1] >= offset):
+            assigned = group
+            break
+      return assigned
+
+   def smart_assign(self, task):
+      self.where_it_should_go(task).add(task)
+
+   def sort_func(self, model, iter1, iter2):
+      task1 = model.get_value(iter1, 0)
+      task2 = model.get_value(iter2, 0)
+      if task1.date.date == TaskDate.FUTURE and task2.date.date != TaskDate.FUTURE:
+         return -1
+      elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:
+         return 1
+      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      for comp in x:
+         if comp != 0:
+            return comp
+      return 0
+
+
    def garbage_sweep_init(self):
       if self.garbage_num:
          self.garbage_num += 1
@@ -210,8 +212,8 @@ class TaskGroup(gtk.VBox):
 
    def pull_styles_from_window(self, *args):
       style = self.realizedparent.get_style()
-      self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
+      self.update_title()
 
    def prio_changed(self, renderer, path, iter):
       miter = self.model.iter_nth_child(None, int(path))
@@ -300,14 +302,65 @@ class TaskGroup(gtk.VBox):
          task.text = val
          self.persist.sync()
 
+   def any_in_daterange(self, offsets):
+      for x in offsets:
+         if x >= self.daterange[0] and x <= self.daterange[1]:
+            return True
+      return False
+
+   def get_events(self):
+      buf = ''
+      if not self.events:
+         return buf
+      for event in self.persist.events:
+         if event.occurs_in(self.daterange):
+            if buf:
+               buf += SPACER
+            buf += ' \xe2\x80\xa2 ' + event.text
+      if buf:
+         buf += SPACER_NO_NEWLINE
+      return buf
+
    def add(self, task):
-      self.label.show()
       self.model.set(self.model.append(), 0, task)
+      self.update(consider_events=False)
+
+   def update(self, consider_events=True):
+      have_tasks = len(self.model)
+      if not consider_events:
+         if have_tasks:
+            self.label.show()
+         else:
+            self.label.hide()
+         return
+      my_events = self.get_events()
+      visible = have_tasks or my_events
+      if visible:
+         self.label.show()
+         self.update_title(my_events)
+      else:
+         self.label.hide()
+
+   def update_title(self, my_events=None):
+      desc = 'Sans 15' if self.top else 'Sans Bold 15'
+      title = self.title
+      if self.events:
+         if my_events is None:
+            my_events = self.get_events()
+      if my_events:
+         self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>' % (desc, title, SPACER, 'Sans 10', self.realizedparent.get_style().fg[gtk.STATE_NORMAL], my_events))
+      else:
+         self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
+      style = self.realizedparent.get_style()
+      if my_events:
+         self.ebox.modify_bg(gtk.STATE_NORMAL,
+            blend(style.base[gtk.STATE_NORMAL], style.bg[gtk.STATE_SELECTED]))
+      else:
+         self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
 
    def remove(self, miter):
       self.model.remove(miter)
-      if len(self.model) == 0:
-         self.label.hide()
+      self.update(consider_events=False)
 
    def destroy_task(self, widget, path):
       miter = self.model.iter_nth_child(None, int(path))
