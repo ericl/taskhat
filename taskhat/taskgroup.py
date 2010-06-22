@@ -324,7 +324,7 @@ class TaskGroup(gtk.VBox):
          if event.occurs_in(self.daterange):
             if buf:
                buf += SPACER
-            buf += ' \xe2\x80\xa2 ' + event.text
+            buf += '     ' + event.text
       if buf:
          buf += SPACER_NO_NEWLINE
       self.eventbuf = buf
