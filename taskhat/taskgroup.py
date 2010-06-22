@@ -2,7 +2,7 @@ import gtk
 import gobject
 import pango
 
-from datetime import datetime
+from time import make_time, now
 
 from task import Task, TaskDate
 
@@ -12,7 +12,7 @@ SPACER_NO_NEWLINE = '<span size="500">\n </span>'
 def escape(s):
    return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
 
-def blend(a, b, A=.8, B=.2):
+def blend(a, b, A=.9, B=.1):
    return gtk.gdk.Color(int(A*a.red + B*b.red), int(A*a.green + B*b.green), int(A*a.blue + B*b.blue))
 
 def togformatter(column, renderer, model, iter):
@@ -161,10 +161,30 @@ class TaskGroup(gtk.VBox):
       self.pull_styles_from_window()
       self.show()
       self.realizedparent.connect('notify::style', self.pull_styles_from_window)
+      self.last_date_sweep = now()
       
       # incremented when removed bit is set
       # decremented when removed from model OR removed bit is unset
       self.garbage_num = 0
+
+      gobject.timeout_add(60*1000, self.date_sweep)
+
+   def date_sweep(self):
+      if self.last_date_sweep.day == now().day:
+         return True
+      self.last_date_sweep = now()
+      iter = self.model.get_iter_first()
+      while iter:
+         task = self.model.get_value(iter, 0)
+         dest = self.where_it_should_go(task)
+         if dest != self:
+            self.remove(iter)
+            dest.add(task)
+            iter = self.model.get_iter_first()
+         else:
+            iter = self.model.iter_next(iter)
+      self.update_title()
+      return True
 
    def where_it_should_go(self, task):
       assigned = TaskGroup.groups[0]
@@ -262,7 +282,7 @@ class TaskGroup(gtk.VBox):
          self.eventcount += 1
          if self.eventcount == 1:
             cd = cal.get_date()
-            d = datetime(cd[0], cd[1]+1, cd[2])
+            d = make_time(cd[0], cd[1]+1, cd[2])
             task.date = TaskDate(date=d)
             finish()
             self.destroy_cal()

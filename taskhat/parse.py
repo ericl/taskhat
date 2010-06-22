@@ -1,9 +1,9 @@
 from task import TaskDate, Task
 
-from datetime import datetime
+from time import now, make_time
 
 def calc_offset(weekday):
-   return (weekday - datetime.today().weekday()) % 7
+   return (weekday - now().weekday()) % 7
 
 def parse_date(text):
    x = None
@@ -16,11 +16,11 @@ def parse_date(text):
    x = x.lower()
    found = True
    if '/' in x:
-      today = datetime.today()
+      today = now()
       try:
          x = x.split('/')
-         a = datetime(today.year, int(x[0]), int(x[1]))
-         b = datetime(today.year + 1, int(x[0]), int(x[1]))
+         a = make_time(today.year, int(x[0]), int(x[1]))
+         b = make_time(today.year + 1, int(x[0]), int(x[1]))
          if (a - today).days < -30:
             out = "%s next year" % b.strftime("%b %d")
             date = TaskDate(date=b)
