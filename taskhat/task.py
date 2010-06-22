@@ -1,4 +1,4 @@
-import datetime
+from time import datetime, now, timedelta
 
 class TaskDate:
    FUTURE = 999999
@@ -10,11 +10,11 @@ class TaskDate:
       elif offset_days is TaskDate.FUTURE:
          self.date = TaskDate.FUTURE
       else:
-         self.date = self.get_today() + datetime.timedelta(offset_days)
+         self.date = self.get_today() + timedelta(offset_days)
 
    def get_today(self):
-      now = datetime.datetime.today()
-      today = datetime.datetime(now.year, now.month, now.day)
+      curr = now()
+      today = datetime(curr.year, curr.month, curr.day)
       return today
 
    def offset(self):

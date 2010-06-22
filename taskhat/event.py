@@ -1,4 +1,4 @@
-from datetime import datetime
+from time import now
 
 class Event(object):
    def __init__(self, text):
@@ -13,7 +13,7 @@ class WeeklyRecurringEvent(Event):
       self.days = days
 
    def offsets_to_next(self):
-      today = datetime.today().weekday()
+      today = now().weekday()
       return map(lambda d: (d - today) % 7, self.days)
 
    def any_in_daterange(self, offsets, daterange):

@@ -1,7 +1,7 @@
 import os
 from pickle import loads, dumps
 
-from datetime import datetime
+from time import now
 
 class Persist:
    def __init__(self, name):
@@ -36,7 +36,7 @@ class Persist:
 
    def sync(self):
       swap = self.path + '~'
-      backup = self.path + '.backup-%d' % datetime.today().weekday()
+      backup = self.path + '.backup-%d' % now().weekday()
       with open(swap, 'w') as s:
          s.write(dumps({'tasks': self.tasks, 'events': self.events}))
          os.rename(self.path, backup)
