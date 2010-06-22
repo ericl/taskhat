@@ -129,7 +129,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
-      dates.set_min_width(80)
+      dates.set_min_width(85)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
       renderer.connect('changed', self.date_changed)

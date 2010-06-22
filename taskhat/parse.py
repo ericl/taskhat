@@ -64,7 +64,7 @@ def parse_date(text):
       date = TaskDate(-1)
    elif x.startswith('nex'):
       out = 'next week'
-      date = TaskDate(calc_offset(7))
+      date = TaskDate(7)
    elif x.startswith('fut') or x.startswith('lat'):
       out = 'in the future'
       date = TaskDate(TaskDate.FUTURE)
