@@ -94,7 +94,7 @@ class Taskhat:
          print a
 
       popup_menu = gtk.Menu()
-      for s in ['Recurring Events', 'Rollback Changes', None, 'Help', 'About']:
+      for s in ['Edit Recurring Events', 'Revert Changes', None, 'Help', 'About']:
          if s:
             x = gtk.MenuItem(s)
          else:

@@ -107,6 +107,9 @@ class TaskGroup(gtk.VBox):
       prio.set_min_width(30)
       renderer.connect('changed', self.prio_changed)
 
+      # XXX need this to get rid of conflict with row_changed()?
+      renderer.connect('editing-started', lambda *x: None)
+
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
       renderer.set_property('has_entry', False)
@@ -130,6 +133,9 @@ class TaskGroup(gtk.VBox):
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
       renderer.connect('changed', self.date_changed)
+
+      # XXX need this to get rid of conflict with row_changed()?
+      renderer.connect('editing-started', lambda *x: None)
 
       renderer = gtk.CellRendererPixbuf()
       notes = gtk.TreeViewColumn("Notes", renderer)
@@ -155,6 +161,9 @@ class TaskGroup(gtk.VBox):
       self.pull_styles_from_window()
       self.show()
       self.realizedparent.connect('notify::style', self.pull_styles_from_window)
+      
+      # incremented when removed bit is set
+      # decremented when removed from model OR removed bit is unset
       self.garbage_num = 0
 
    def where_it_should_go(self, task):
@@ -183,7 +192,6 @@ class TaskGroup(gtk.VBox):
             return comp
       return 0
 
-
    def garbage_sweep_init(self):
       if self.garbage_num:
          self.garbage_num += 1
@@ -198,7 +206,6 @@ class TaskGroup(gtk.VBox):
                self.model.row_changed(i, x.iter)
                if task.removed > 50:
                   self.remove(x.iter)
-                  self.garbage_num -= 1
                else:
                   task.removed += 1
          return self.garbage_num > 0
@@ -325,6 +332,8 @@ class TaskGroup(gtk.VBox):
    def add(self, task):
       self.model.set(self.model.append(), 0, task)
       self.update(events_changed=False)
+      if task.removed:
+         self.garbage_sweep_init()
 
    def update(self, events_changed=True):
       if events_changed:
@@ -353,8 +362,12 @@ class TaskGroup(gtk.VBox):
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
 
    def remove(self, miter):
+      task = self.model.get_value(miter, 0)
       self.model.remove(miter)
       self.update(events_changed=False)
+      if task.removed:
+         self.garbage_num -= 1
+         assert self.garbage_num > 0
 
    def destroy_task(self, widget, path):
       miter = self.model.iter_nth_child(None, int(path))
@@ -365,6 +378,7 @@ class TaskGroup(gtk.VBox):
       else:
          task.prefix = ''
          self.garbage_num -= 1
+         assert self.garbage_num > 0
       self.persist.sync()
 
 # vim: et sw=3
