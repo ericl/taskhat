@@ -68,10 +68,10 @@ class TaskGroup(gtk.VBox):
       self.label.set_alignment(0,0)
       self.label.set_padding(3,3)
       self.pack_start(self.ebox, False, False)
+      self.sep = gtk.HSeparator()
       if self.events:
-         sep = gtk.HSeparator()
-         sep.show()
-         self.pack_start(sep, False, False)
+         self.sep.show()
+         self.pack_start(self.sep, False, False)
          l2 = gtk.Label()
          l2.set_markup(SPACER_NO_NEWLINE)
          l2.show()
@@ -385,6 +385,7 @@ class TaskGroup(gtk.VBox):
          self.update_title()
       else:
          self.label.hide()
+         self.sep.hide()
 
    def update_title(self):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'

@@ -39,7 +39,8 @@ class Persist:
       backup = self.path + '.backup-%d' % now().weekday()
       with open(swap, 'w') as s:
          s.write(dumps({'tasks': self.tasks, 'events': self.events}))
-         os.rename(self.path, backup)
+         if os.path.exists(self.path):
+            os.rename(self.path, backup)
          os.rename(swap, self.path)
 
    def restore(self, f_insert, f_notify_events_loaded):
