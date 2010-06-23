@@ -10,7 +10,7 @@ import pango
 
 from task import Task
 from persist import Persist
-from taskgroup import TaskGroup
+from taskgroup import TaskGroup, escape
 from parse import derive_label
 
 DBUS_OK = True
@@ -93,13 +93,8 @@ class Taskhat:
       tool = gtk.ToolButton(abox, 'Tools')
 
       def NOTIMPLEMENTED(*args):
-         dialog = gtk.Dialog(parent=self.window)
-         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
-         s = gtk.Label("NOTIMPLEMENTED")
-         s.set_padding(50,20)
-         s.show()
-         dialog.set_modal(True)
-         dialog.vbox.pack_start(s)
+         dialog = gtk.MessageDialog(parent=self.window, flags=gtk.DIALOG_MODAL)
+         dialog.set_markup("NOTIMPLEMENTED")
          button = gtk.Button("Ok")
          def dest(*args):
             dialog.destroy()
@@ -134,7 +129,7 @@ class Taskhat:
 
       s = 'About'
       x = gtk.MenuItem(s)
-      x.connect('activate', NOTIMPLEMENTED)
+      x.connect('activate', self.about_menu)
       x.show()
       popup_menu.append(x)
 
@@ -280,6 +275,14 @@ class Taskhat:
    def close(self, widget, data=None):
       gtk.main_quit()
 
+   def about_menu(self, *args):
+      dialog = gtk.AboutDialog()
+      dialog.set_name('Taskhat')
+      dialog.set_version('0.2')
+      dialog.set_copyright('Copyright Eric Liang (2010)')
+      dialog.run()
+      dialog.hide()
+
    def main(self):
       try:
          from ctypes import cdll
@@ -287,25 +290,14 @@ class Taskhat:
       except:
          pass
       def handler(e_type, e_value, e_trace):
-         msg = str(e_type) + '\n'
-         msg += '\n'.join(traceback.format_tb(e_trace))
-         msg += '\n' + 'Further exceptions not be shown.'
          sys.excepthook = sys.__excepthook__
-         dialog = gtk.Dialog(parent=self.window)
-         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
-         dialog.set_title('Exception in Taskhat')
-         s = gtk.Label(msg)
-         s.set_padding(10,10)
-         s.show()
-         dialog.set_modal(True)
-         dialog.vbox.pack_start(s)
-         button = gtk.Button("Ok")
-         def dest(*args):
-            dialog.destroy()
-         button.connect('clicked', dest)
-         button.show()
-         dialog.action_area.pack_end(button)
-         dialog.show()
+         msg = str(e_value) + '\n'
+         msg += '\n'.join(traceback.format_tb(e_trace))
+         msg += '\n' + 'Further exceptions will not be shown.'
+         dialog = gtk.MessageDialog(parent=self.window, flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR)
+         dialog.set_title(str(e_type))
+         dialog.set_markup(escape(msg))
+         dialog.run()
       sys.excepthook = handler
       gtk.main()
 

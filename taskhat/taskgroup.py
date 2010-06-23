@@ -10,7 +10,7 @@ SPACER = '<span size="900">\n\n</span>'
 SPACER_NO_NEWLINE = '<span size="000">\n </span>'
 
 def escape(s):
-   return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+   return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 # no blending when A=1, B=0
 def blend(a, b, A=0.90, B=0.10):
