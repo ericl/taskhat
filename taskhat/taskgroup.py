@@ -7,12 +7,13 @@ from time import make_time, now
 from task import Task, TaskDate
 
 SPACER = '<span size="900">\n\n</span>'
-SPACER_NO_NEWLINE = '<span size="500">\n </span>'
+SPACER_NO_NEWLINE = '<span size="000">\n </span>'
 
 def escape(s):
    return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
 
-def blend(a, b, A=0.8, B=0.2):
+# no blending when A=1, B=0
+def blend(a, b, A=0.90, B=0.10):
    return gtk.gdk.Color(int(A*a.red + B*b.red), int(A*a.green + B*b.green), int(A*a.blue + B*b.blue))
 
 def togformatter(column, renderer, model, iter):
@@ -67,6 +68,14 @@ class TaskGroup(gtk.VBox):
       self.label.set_alignment(0,0)
       self.label.set_padding(3,3)
       self.pack_start(self.ebox, False, False)
+      if self.events:
+         sep = gtk.HSeparator()
+         sep.show()
+         self.pack_start(sep, False, False)
+         l2 = gtk.Label()
+         l2.set_markup(SPACER_NO_NEWLINE)
+         l2.show()
+         self.pack_start(l2, False, False)
       self.pack_start(self.tree_view, False, False)
       self.tree_view.set_headers_visible(False)
 
@@ -130,7 +139,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
-      dates.set_min_width(85)
+      dates.set_min_width(90)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
       renderer.connect('changed', self.date_changed)
@@ -148,7 +157,7 @@ class TaskGroup(gtk.VBox):
 
       renderer = gtk.CellRendererText()
       notes.pack_end(renderer, True)
-      notes.set_min_width(40)
+      notes.set_min_width(25)
 
       self.tree_view.append_column(checkbox)
       self.tree_view.append_column(prio)
@@ -203,6 +212,10 @@ class TaskGroup(gtk.VBox):
    def sort_func(self, model, iter1, iter2):
       task1 = model.get_value(iter1, 0)
       task2 = model.get_value(iter2, 0)
+      if task1.date.date is None and task2.date.date is not None:
+         return -1
+      elif task2.date.date is None and task1.date.date is not None:
+         return 1
       if task1.date.date == TaskDate.FUTURE and task2.date.date != TaskDate.FUTURE:
          return -1
       elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:

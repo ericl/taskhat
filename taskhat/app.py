@@ -6,7 +6,7 @@ pygtk.require('2.0')
 import gtk
 import pango
 
-from task import Task, TaskDate
+from task import Task
 from persist import Persist
 from taskgroup import TaskGroup
 from parse import derive_label
@@ -160,11 +160,10 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      TaskGroup('Undated', self.window, self.persist, (None, -TaskDate.FUTURE), True)
-      TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE, -1))
-      TaskGroup('Today', self.window, self.persist, (0, 0), events=True)
+      TaskGroup('Today', self.window, self.persist, (None, 0), events=True)
       TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
-      TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
+      TaskGroup('In Two Days', self.window, self.persist, (2, 2))
+      TaskGroup('Next 7 Days', self.window, self.persist, (3, 7))
       TaskGroup('Future', self.window, self.persist, (8, None))
       for group in TaskGroup.groups:
          box3.pack_start(group, False, False)
