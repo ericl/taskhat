@@ -12,7 +12,7 @@ SPACER_NO_NEWLINE = '<span size="500">\n </span>'
 def escape(s):
    return s.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
 
-def blend(a, b, A=.9, B=.1):
+def blend(a, b, A=0.8, B=0.2):
    return gtk.gdk.Color(int(A*a.red + B*b.red), int(A*a.green + B*b.green), int(A*a.blue + B*b.blue))
 
 def togformatter(column, renderer, model, iter):
@@ -29,7 +29,7 @@ def prefixformatter(column, renderer, model, iter):
 
 def prioformatter(column, renderer, model, iter):
    task = model.get_value(iter, 0)
-   renderer.set_property('markup', task.prio.symbol())
+   renderer.set_property('markup', str(task.prio))
    renderer.set_property('xalign', 0.5)
    renderer.set_property('alignment', pango.ALIGN_CENTER)
 
@@ -125,6 +125,7 @@ class TaskGroup(gtk.VBox):
       date_store.set(date_store.append(), 0, str(TaskDate(5)))
       date_store.set(date_store.append(), 0, str(TaskDate(6)))
       date_store.set(date_store.append(), 0, str(TaskDate(7)))
+      date_store.set(date_store.append(), 0, str(TaskDate(TaskDate.SOON)))
       date_store.set(date_store.append(), 0, str(TaskDate(TaskDate.FUTURE)))
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
@@ -206,7 +207,14 @@ class TaskGroup(gtk.VBox):
          return -1
       elif task2.date.date == TaskDate.FUTURE and task1.date.date != TaskDate.FUTURE:
          return 1
-      x = [0 if task1.date.date is None or task1.date.date == TaskDate.FUTURE else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
+      if task1.date.date == TaskDate.SOON and task2.date.date != TaskDate.SOON:
+         return -1
+      elif task2.date.date == TaskDate.SOON and task1.date.date != TaskDate.SOON:
+         return 1
+      print task1.date
+      print task2.date
+      print task1.date.special()
+      x = [0 if task1.date.special() else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
       for comp in x:
          if comp != 0:
             return comp
@@ -344,7 +352,7 @@ class TaskGroup(gtk.VBox):
          if event.occurs_in(self.daterange):
             if buf:
                buf += SPACER
-            buf += '     ' + event.text
+            buf += '  \xc2\xbb  ' + event.text
       if buf:
          buf += SPACER_NO_NEWLINE
       self.eventbuf = buf

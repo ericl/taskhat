@@ -1,5 +1,8 @@
 from time import now
 
+def str_enum_weekdays(i):
+   return {0: 'M', 1: 'Tu', 2: 'W', 3: 'Th', 4: 'F', 5: 'Sa', 6: 'Su'}[i]
+
 class Event(object):
    def __init__(self, text):
       self.text = text
@@ -24,5 +27,8 @@ class WeeklyRecurringEvent(Event):
 
    def occurs_in(self, daterange):
       return self.any_in_daterange(self.offsets_to_next(), daterange)
+
+   def __str__(self):
+      return "[%s] %s" % (''.join(map(str_enum_weekdays, self.days)), self.text)
 
 # vim: et sw=3

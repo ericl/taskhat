@@ -90,17 +90,52 @@ class Taskhat:
       image.show()
       tool = gtk.ToolButton(abox, 'Tools')
 
-      def inspect(*a):
-         print a
+      def NOTIMPLEMENTED(*args):
+         dialog = gtk.Dialog(parent=self.window)
+         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+         s = gtk.Label("NOTIMPLEMENTED")
+         s.set_padding(50,20)
+         s.show()
+         dialog.set_modal(True)
+         dialog.vbox.pack_start(s)
+         button = gtk.Button("Ok")
+         def dest(*args):
+            dialog.destroy()
+         button.connect('clicked', dest)
+         button.show()
+         dialog.action_area.pack_end(button)
+         dialog.show()
 
       popup_menu = gtk.Menu()
-      for s in ['Edit Recurring Events', 'Revert Changes', None, 'Help', 'About']:
-         if s:
-            x = gtk.MenuItem(s)
-         else:
-            x = gtk.SeparatorMenuItem()
-         x.show()
-         popup_menu.append(x)
+
+      s = 'Edit Recurring Events'
+      x = gtk.MenuItem(s)
+      x.connect('activate', self.rev_handler)
+      x.show()
+      popup_menu.append(x)
+
+      s = 'Revert Changes'
+      x = gtk.MenuItem(s)
+      x.connect('activate', NOTIMPLEMENTED)
+      x.show()
+      popup_menu.append(x)
+
+      x = gtk.SeparatorMenuItem()
+      x.show()
+      popup_menu.append(x)
+
+      s = 'Help'
+      x = gtk.MenuItem(s)
+      x.connect('activate', NOTIMPLEMENTED)
+      x.show()
+      popup_menu.append(x)
+
+      s = 'About'
+      x = gtk.MenuItem(s)
+      x.connect('activate', NOTIMPLEMENTED)
+      x.show()
+      popup_menu.append(x)
+
       popup_menu.attach_to_widget(tool, None)
       popup_menu.show()
 
@@ -180,15 +215,31 @@ class Taskhat:
       self.window.show()
       entry.grab_focus()
       self.window.connect('notify::style', self.update_group_styles)
+      self.window.connect('notify::is-active', self.save_geom)
 
-      def save_geom(*args):
-         self.persist.save_geometry(self.window.get_position(), self.window.get_size())
-
-      self.window.connect('notify::is-active', save_geom)
+   def save_geom(self, *args):
+      self.persist.save_geometry(self.window.get_position(), self.window.get_size())
 
    def update_events(self):
       for g in TaskGroup.groups:
          g.update()
+
+   def rev_handler(self, *args):
+      dialog = gtk.Dialog(parent=self.window)
+      dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+      s = gtk.Label()
+      s.set_padding(20,20)
+      s.set_text('\n'.join(map(str, self.persist.events)))
+      s.show()
+      dialog.set_modal(True)
+      dialog.vbox.pack_start(s)
+      button = gtk.Button("Ok")
+      def dest(*args):
+         dialog.destroy()
+      button.connect('clicked', dest)
+      button.show()
+      dialog.action_area.pack_end(button)
+      dialog.show()
 
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
