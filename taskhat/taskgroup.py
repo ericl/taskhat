@@ -224,9 +224,6 @@ class TaskGroup(gtk.VBox):
          return -1
       elif task2.date.date == TaskDate.SOON and task1.date.date != TaskDate.SOON:
          return 1
-      print task1.date
-      print task2.date
-      print task1.date.special()
       x = [0 if task1.date.special() else (task2.date.date - task1.date.date).days, task2.prio.num - task1.prio.num]
       for comp in x:
          if comp != 0:

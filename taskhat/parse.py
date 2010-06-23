@@ -96,7 +96,7 @@ TASK_TYPES = [
    (end_match_f('='), 'Regular task due', Task.PRIORITY_MEDIUM, stripsymb),
    (end_match_f('-'), 'Idle task due', Task.PRIORITY_LOW, stripsymb),
    (end_match_f("*"), 'Administrivia due', Task.PRIORITY_ADMIN, stripsymb),
-   (mid_match_f([' hw ', ' homework ']), 'Homework due', Task.PRIORITY_MEDIUM, echo),
+   (mid_match_f([' hw', ' homework ']), 'Homework due', Task.PRIORITY_MEDIUM, echo),
    (mid_match_f([' proj']), 'Project due', Task.PRIORITY_HIGH, echo),
    (mid_match_f([' read ']), 'Reading due', Task.PRIORITY_LOW, echo),
    (mid_match_f([' final ', ' midterm ', ' exam ']), 'Exam on', Task.PRIORITY_HIGH, echo),

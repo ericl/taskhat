@@ -3,6 +3,8 @@
 import pygtk
 pygtk.require('2.0')
 
+import sys
+import traceback
 import gtk
 import pango
 
@@ -275,15 +277,36 @@ class Taskhat:
       self.persist.save(task)
       self.entry.set_text('')
 
+   def close(self, widget, data=None):
+      gtk.main_quit()
+
    def main(self):
       try:
          from ctypes import cdll
          cdll.LoadLibrary('libc.so.6').prctl(15, 'taskhat', 0, 0, 0)
       except:
          pass
+      def handler(e_type, e_value, e_trace):
+         msg = str(e_type) + '\n'
+         msg += '\n'.join(traceback.format_tb(e_trace))
+         msg += '\n' + 'Further exceptions not be shown.'
+         sys.excepthook = sys.__excepthook__
+         dialog = gtk.Dialog(parent=self.window)
+         dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+         dialog.set_title('Exception in Taskhat')
+         s = gtk.Label(msg)
+         s.set_padding(10,10)
+         s.show()
+         dialog.set_modal(True)
+         dialog.vbox.pack_start(s)
+         button = gtk.Button("Ok")
+         def dest(*args):
+            dialog.destroy()
+         button.connect('clicked', dest)
+         button.show()
+         dialog.action_area.pack_end(button)
+         dialog.show()
+      sys.excepthook = handler
       gtk.main()
-  
-   def close(self, widget, data=None):
-      gtk.main_quit()
 
 # vim: et sw=3
