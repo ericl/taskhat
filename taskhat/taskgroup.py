@@ -70,7 +70,6 @@ class TaskGroup(gtk.VBox):
       self.pack_start(self.ebox, False, False)
       self.sep = gtk.HSeparator()
       if self.events:
-         self.sep.show()
          self.pack_start(self.sep, False, False)
          l2 = gtk.Label()
          l2.set_markup(SPACER_NO_NEWLINE)
@@ -379,10 +378,13 @@ class TaskGroup(gtk.VBox):
       if events_changed:
          self.update_eventbuf()
       have_tasks = len(self.model)
-      visible = have_tasks or (self.events and self.eventbuf)
+      have_events = self.events and self.eventbuf
+      visible = have_tasks or have_events
       if visible:
          self.label.show()
          self.update_title()
+         if have_events:
+            self.sep.show()
       else:
          self.label.hide()
          self.sep.hide()

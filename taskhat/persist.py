@@ -52,7 +52,7 @@ class Persist:
                f_insert(task)
             self.events = saved.get('events', [])
             f_notify_events_loaded()
-      except IOError:
+      except:
          pass
 
 # vim: et sw=3
