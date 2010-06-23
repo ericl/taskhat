@@ -294,10 +294,11 @@ class Taskhat:
          msg = str(e_value) + '\n'
          msg += '\n'.join(traceback.format_tb(e_trace))
          msg += '\n' + 'Further exceptions will not be shown.'
-         dialog = gtk.MessageDialog(parent=self.window, flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR)
+         dialog = gtk.MessageDialog(parent=self.window, buttons=gtk.BUTTONS_OK, flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_ERROR)
          dialog.set_title(str(e_type))
          dialog.set_markup(escape(msg))
          dialog.run()
+         dialog.hide()
       sys.excepthook = handler
       gtk.main()
 
