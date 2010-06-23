@@ -260,8 +260,6 @@ class TaskGroup(gtk.VBox):
       return False
 
    def pull_styles_from_window(self, *args):
-      style = self.realizedparent.get_style()
-      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
       self.update_title()
 
    def prio_changed(self, renderer, path, iter):
@@ -390,16 +388,16 @@ class TaskGroup(gtk.VBox):
    def update_title(self):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'
       title = self.title
-      self.update_eventbuf()
-      if self.eventbuf:
-         self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>' % (desc, title, SPACER, 'Sans 10', self.realizedparent.get_style().fg[gtk.STATE_NORMAL], self.eventbuf))
-      else:
-         self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
       style = self.realizedparent.get_style()
+      self.update_eventbuf()
+      self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
       if self.eventbuf:
+         self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>'
+            % (desc, title, SPACER, 'Sans 10', style.fg[gtk.STATE_NORMAL], self.eventbuf))
          self.ebox.modify_bg(gtk.STATE_NORMAL,
             blend(style.base[gtk.STATE_NORMAL], style.bg[gtk.STATE_SELECTED]))
       else:
+         self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
 
    def remove(self, miter):
@@ -408,7 +406,7 @@ class TaskGroup(gtk.VBox):
       self.update(events_changed=False)
       if task.removed:
          self.garbage_num -= 1
-         assert self.garbage_num > 0
+         assert self.garbage_num >= 0
 
    def destroy_task(self, widget, path):
       miter = self.model.iter_nth_child(None, int(path))
@@ -419,7 +417,7 @@ class TaskGroup(gtk.VBox):
       else:
          task.prefix = ''
          self.garbage_num -= 1
-         assert self.garbage_num > 0
+         assert self.garbage_num >= 0
       self.persist.sync()
 
 # vim: et sw=3
