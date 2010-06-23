@@ -279,6 +279,7 @@ class Taskhat:
       dialog = gtk.AboutDialog()
       dialog.set_name('Taskhat')
       dialog.set_version('0.2')
+      dialog.set_comments('Taskhat is optimized for the workflow of the typical university student.')
       dialog.set_copyright('Copyright Eric Liang (2010)')
       dialog.run()
       dialog.hide()
