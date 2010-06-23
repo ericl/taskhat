@@ -353,17 +353,21 @@ class TaskGroup(gtk.VBox):
       return False
 
    def update_eventbuf(self):
-      if not self.events:
-         return
       buf = ''
       for event in self.persist.events:
          if event.occurs_in(self.daterange):
             if buf:
                buf += SPACER
-            buf += '  \xc2\xbb  ' + event.text
+            if self.events:
+               buf += '  \xc2\xbb  ' + event.text
+            else:
+               buf += '\xc2\xbb  ' + event.text
       if buf:
          buf += SPACER_NO_NEWLINE
-      self.eventbuf = buf
+      if not self.events and not buf:
+         self.eventbuf = 'no events'
+      else:
+         self.eventbuf = buf
 
    def add(self, task):
       self.model.set(self.model.append(), 0, task)
@@ -375,7 +379,7 @@ class TaskGroup(gtk.VBox):
       if events_changed:
          self.update_eventbuf()
       have_tasks = len(self.model)
-      visible = have_tasks or self.eventbuf
+      visible = have_tasks or (self.events and self.eventbuf)
       if visible:
          self.label.show()
          self.update_title()
@@ -387,8 +391,12 @@ class TaskGroup(gtk.VBox):
       title = self.title
       style = self.realizedparent.get_style()
       self.update_eventbuf()
+      if self.events:
+         self.label.set_tooltip_text('')
+      else:
+         self.label.set_tooltip_markup(self.eventbuf)
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
-      if self.eventbuf:
+      if self.events and self.eventbuf:
          self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>'
             % (desc, title, SPACER, 'Sans 10', style.fg[gtk.STATE_NORMAL], self.eventbuf))
          self.ebox.modify_bg(gtk.STATE_NORMAL,
