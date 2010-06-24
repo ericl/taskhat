@@ -119,12 +119,7 @@ class WeeklyRecurringEvent(Event):
 
    def __str__(self):
       if self.tdelta.seconds:
-         ret = '%s<i> - %s</i>' % (self.text, self.get_timestring())
-      else:
-         ret = '%s' % (self.text)
-      if self.occurs_later_today():
-         return ret
-      else:
-         return '<span strikethrough="true">%s</span>' % ret
+         return '%s<i> - %s</i>' % (self.text, self.get_timestring())
+      return '%s' % (self.text)
 
 # vim: et sw=3

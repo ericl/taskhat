@@ -353,6 +353,12 @@ class TaskGroup(gtk.VBox):
             return True
       return False
 
+   def format_event_for_today(self, event):
+      if event.occurs_later_today():
+         return str(event)
+      else:
+         return '<span strikethrough="true">%s</span>' % str(event)
+
    def update_eventbuf(self):
       buf = ''
       for event in self.persist.events:
@@ -360,7 +366,7 @@ class TaskGroup(gtk.VBox):
             if buf:
                buf += SPACER
             if self.events:
-               buf += '  \xc2\xbb  ' + str(event)
+               buf += '  \xc2\xbb  ' + self.format_event_for_today(event)
             else:
                buf += '\xc2\xbb  ' + str(event)
       if buf:
