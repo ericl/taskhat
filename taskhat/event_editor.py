@@ -3,7 +3,7 @@ import gobject
 import pango
 
 from taskgroup import escape
-from event import WeeklyRecurringEvent
+from event import WeeklyRecurringEvent, event_sort_func
 
 def togformatter(column, renderer, model, iter):
    event = model.get_value(iter, 0)
@@ -37,7 +37,7 @@ class EventEditor:
       tree_view = self.tree_view = gtk.TreeView(model)
       tree_view.show()
 
-      self.model.set_sort_func(13, self.sort_func)
+      self.model.set_sort_func(13, event_sort_func)
       self.model.set_sort_column_id(13, gtk.SORT_DESCENDING)
 
       for event in persist.events:
@@ -134,6 +134,7 @@ class EventEditor:
       event.tdelta = WeeklyRecurringEvent.parse_timestring(text)
       self.model.remove(miter)
       self.model.set(self.model.append(), 0, event)
+      self.persist.resort_events()
       self.taskhat.update_events()
       self.persist.sync()
 
@@ -148,6 +149,7 @@ class EventEditor:
       event = WeeklyRecurringEvent.from_text('', '', '')
       self.model.set(self.model.append(), 0, event)
       self.persist.events.append(event)
+      self.persist.resort_events()
       self.update_button_state()
    
    def destroy_event(self, widget, path):
@@ -157,20 +159,6 @@ class EventEditor:
       self.model.row_changed(path, miter)
       self.taskhat.update_events()
       self.persist.sync()
-
-   def sort_func(self, model, iter1, iter2):
-      e1 = model.get_value(iter1, 0)
-      e2 = model.get_value(iter2, 0)
-      if not e2.tdelta and e1.tdelta:
-         return 1
-      if not e1.tdelta and e2.tdelta:
-         return -1
-      if e2.tdelta == e1.tdelta:
-         return 0
-      elif e2.tdelta > e1.tdelta:
-         return 1
-      else:
-         return -1
 
    def run(self):
       self.dialog.show()

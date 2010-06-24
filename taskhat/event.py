@@ -5,6 +5,23 @@ weekday_map = {0: 'M', 1: 'Tu', 2: 'W', 3: 'Th', 4: 'F', 5: 'Sa', 6: 'Su'}
 def str_enum_weekdays(i):
    return weekday_map[i]
 
+def event_cmp(e1, e2):
+   if not e2.tdelta and e1.tdelta:
+      return 1
+   if not e1.tdelta and e2.tdelta:
+      return -1
+   if e2.tdelta == e1.tdelta:
+      return 0
+   elif e2.tdelta > e1.tdelta:
+      return 1
+   else:
+      return -1
+
+def event_sort_func(model, iter1, iter2):
+   e1 = model.get_value(iter1, 0)
+   e2 = model.get_value(iter2, 0)
+   return event_cmp(e1, e2)
+
 class Event(object):
    def __init__(self, text):
       self.text = text
@@ -77,6 +94,10 @@ class WeeklyRecurringEvent(Event):
       return self.any_in_daterange(self.offsets_to_next(), daterange)
 
    def occurs_later_today(self):
+      if self.deleted:
+         return False
+      if self.tdelta.seconds == 0:
+         return True
       x = now()
       return self.tdelta.seconds > 3600*x.hour + 60*x.minute
 

@@ -2,6 +2,7 @@ import os
 from pickle import loads, dumps
 
 from time import now
+from event import event_cmp
 
 class Persist:
    def __init__(self, name):
@@ -16,6 +17,9 @@ class Persist:
    def save(self, task):
       self.tasks.append(task)
       self.sync()
+
+   def resort_events(self):
+      self.events.sort(event_cmp, reverse=True)
 
    def save_geometry(self, pos, size):
       if pos == self.pos and size == self.size:

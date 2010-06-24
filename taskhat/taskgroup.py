@@ -179,6 +179,8 @@ class TaskGroup(gtk.VBox):
       gobject.timeout_add(60*1000, self.date_sweep)
 
    def date_sweep(self):
+      if self.events:
+         self.update_title()
       if self.last_date_sweep.day == now().day:
          return True
       self.last_date_sweep = now()
