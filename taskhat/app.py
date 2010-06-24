@@ -10,6 +10,7 @@ import pango
 
 from task import Task
 from persist import Persist
+from event_editor import EventEditor
 from taskgroup import TaskGroup, escape
 from parse import derive_label
 
@@ -107,7 +108,7 @@ class Taskhat:
 
       s = 'Edit Recurring Events'
       x = gtk.MenuItem(s)
-      x.connect('activate', self.rev_handler)
+      x.connect('activate', self.event_editor)
       x.show()
       popup_menu.append(x)
 
@@ -220,22 +221,8 @@ class Taskhat:
       for g in TaskGroup.groups:
          g.update()
 
-   def rev_handler(self, *args):
-      dialog = gtk.Dialog(parent=self.window)
-      dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
-      s = gtk.Label()
-      s.set_padding(20,20)
-      s.set_text('\n'.join(map(str, self.persist.events)))
-      s.show()
-      dialog.set_modal(True)
-      dialog.vbox.pack_start(s)
-      button = gtk.Button("Ok")
-      def dest(*args):
-         dialog.destroy()
-      button.connect('clicked', dest)
-      button.show()
-      dialog.action_area.pack_end(button)
-      dialog.show()
+   def event_editor(self, *args):
+      EventEditor(self.window, self.persist, self).run()
 
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])

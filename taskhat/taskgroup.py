@@ -358,9 +358,9 @@ class TaskGroup(gtk.VBox):
             if buf:
                buf += SPACER
             if self.events:
-               buf += '  \xc2\xbb  ' + event.text
+               buf += '  \xc2\xbb  ' + str(event)
             else:
-               buf += '\xc2\xbb  ' + event.text
+               buf += '\xc2\xbb  ' + str(event)
       if buf:
          buf += SPACER_NO_NEWLINE
       if not self.events and not buf:
@@ -385,6 +385,8 @@ class TaskGroup(gtk.VBox):
          self.update_title()
          if have_events:
             self.sep.show()
+         else:
+            self.sep.hide()
       else:
          self.label.hide()
          self.sep.hide()

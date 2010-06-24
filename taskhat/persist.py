@@ -50,7 +50,7 @@ class Persist:
             self.tasks = filter(lambda t: not t.removed, saved.get('tasks', []))
             for task in self.tasks:
                f_insert(task)
-            self.events = saved.get('events', [])
+            self.events = filter(lambda e: not e.deleted, saved.get('events', []))
             f_notify_events_loaded()
       except:
          pass
