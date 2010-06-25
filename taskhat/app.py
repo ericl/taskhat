@@ -11,6 +11,7 @@ import pango
 from task import Task
 from persist import Persist
 from event_editor import EventEditor
+from restore_from_backup import RestoreFromBackup
 from taskgroup import TaskGroup, escape
 from parse import derive_label
 
@@ -114,7 +115,7 @@ class Taskhat:
 
       s = 'Revert Changes'
       x = gtk.MenuItem(s)
-      x.connect('activate', NOTIMPLEMENTED)
+      x.connect('activate', self.backup_restore)
       x.show()
       popup_menu.append(x)
 
@@ -217,12 +218,19 @@ class Taskhat:
    def save_geom(self, *args):
       self.persist.save_geometry(self.window.get_position(), self.window.get_size())
 
+   def clear_all(self):
+      for g in TaskGroup.groups:
+         g.clear()
+
    def update_events(self):
       for g in TaskGroup.groups:
          g.update()
 
    def event_editor(self, *args):
       EventEditor(self.window, self.persist, self).run()
+
+   def backup_restore(self, *args):
+      RestoreFromBackup(self.window, self.persist, self).run()
 
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
@@ -266,8 +274,8 @@ class Taskhat:
       dialog = gtk.AboutDialog()
       dialog.set_name('Taskhat')
       dialog.set_version('0.2')
-      dialog.set_comments('Taskhat is optimized for the workflow of the typical university student.')
-      dialog.set_copyright('Copyright Eric Liang (2010)')
+      dialog.set_comments('Taskhat lets you manage tasks and events, both over short and long terms.')
+      dialog.set_copyright('Copyright \xc2\xa9 2010 Eric Liang')
       dialog.run()
       dialog.hide()
 

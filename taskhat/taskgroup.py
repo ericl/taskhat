@@ -178,6 +178,9 @@ class TaskGroup(gtk.VBox):
 
       gobject.timeout_add(60*1000, self.date_sweep)
 
+   def clear(self):
+      self.model.clear()
+
    def date_sweep(self):
       if self.events:
          self.update_title()

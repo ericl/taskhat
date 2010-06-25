@@ -62,7 +62,7 @@ class EventEditor:
       renderer.connect('edited', self.text_changed)
       self.tree_view.append_column(column)
 
-      column = gtk.TreeViewColumn('Weekdays')
+      column = gtk.TreeViewColumn('MTuWThFSaSu')
       renderer = gtk.CellRendererText()
       renderer.set_property('editable', True)
       renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
@@ -72,7 +72,7 @@ class EventEditor:
       renderer.connect('edited', self.weekday_changed)
       self.tree_view.append_column(column)
 
-      column = gtk.TreeViewColumn('Time')
+      column = gtk.TreeViewColumn('xx:xx[pm]')
       renderer = gtk.CellRendererText()
       renderer.set_property('editable', True)
       renderer.set_property('ellipsize', pango.ELLIPSIZE_END)

@@ -47,16 +47,27 @@ class Persist:
             os.rename(self.path, backup)
          os.rename(swap, self.path)
 
-   def restore(self, f_insert, f_notify_events_loaded):
+   def get_path_n_days_ago(self, days_ago):
+      num = (now().weekday() - days_ago) % 7
+      return '%s.backup-%d' % (self.path, num)
+
+   def restore(self, f_insert, f_notify_events_loaded, days_ago=None, f_clear=None):
+      saved = self.path
+      if days_ago is not None:
+         saved = self.get_path_n_days_ago(days_ago)
+      if f_clear:
+         f_clear()
+         self.tasks = []
+         self.events = []
       try:
-         with open(self.path, 'r') as f:
+         with open(saved, 'r') as f:
             saved = loads(f.read())
             self.tasks = filter(lambda t: not t.removed, saved.get('tasks', []))
             for task in self.tasks:
                f_insert(task)
             self.events = filter(lambda e: not e.deleted, saved.get('events', []))
-            f_notify_events_loaded()
-      except:
-         pass
+      except Exception, e:
+         print e
+      f_notify_events_loaded()
 
 # vim: et sw=3
