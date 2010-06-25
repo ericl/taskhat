@@ -180,6 +180,8 @@ class TaskGroup(gtk.VBox):
 
    def clear(self):
       self.model.clear()
+      # all being-deleted rows are gone
+      self.garbage_num = 0
 
    def date_sweep(self):
       if self.events:
