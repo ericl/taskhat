@@ -275,7 +275,7 @@ class Taskhat:
       dialog = gtk.AboutDialog()
       dialog.set_name('Taskhat')
       dialog.set_version('0.2')
-      dialog.set_comments('Taskhat lets you manage tasks and events, both over short and long terms.')
+      dialog.set_comments('Taskhat lets you manage tasks and events, over both the short and long term.')
       dialog.set_copyright('Copyright \xc2\xa9 2010 Eric Liang')
       dialog.run()
       dialog.hide()
