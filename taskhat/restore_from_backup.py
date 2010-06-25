@@ -40,14 +40,15 @@ class RestoreFromBackup:
       hbox.show()
       dialog.vbox.pack_start(frame)
 
-      button = gtk.Button('Cancel')
+      cbutton = gtk.Button('Cancel')
+      cbutton.grab_focus()
       def cancel(*args):
          self.persist.restore(self.taskhat.insert_task, self.taskhat.update_events,
             f_clear=self.taskhat.clear_all)
          dialog.destroy()
-      button.connect('clicked', cancel)
-      button.show()
-      dialog.action_area.pack_end(button)
+      cbutton.connect('clicked', cancel)
+      cbutton.show()
+      dialog.action_area.pack_end(cbutton)
 
       button = gtk.Button('Restore')
       def sync_changes(*args):
@@ -55,6 +56,7 @@ class RestoreFromBackup:
          dialog.destroy()
       button.connect('clicked', sync_changes)
       button.show()
+      cbutton.grab_focus()
       dialog.action_area.pack_end(button)
 
    def change_select(self, widget):

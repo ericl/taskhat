@@ -112,6 +112,7 @@ class EventEditor:
       button.connect('clicked', dest)
       button.show()
       dialog.action_area.pack_end(button)
+      button.grab_focus()
 
    def text_changed(self, renderer, path, text):
       event = self.model.get_value(self.model.iter_nth_child(None, int(path)), 0)
