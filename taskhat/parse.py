@@ -2,58 +2,7 @@ from task import TaskDate, Task
 
 from time import now, make_time
 
-def calc_offset(weekday):
-   return (weekday - now().weekday()) % 7
-
-date_match_dict = {
-   'mon': ['Monday', TaskDate(calc_offset(0)), True],
-   'tue': ['Tuesday', TaskDate(calc_offset(1)), True],
-   'wed': ['Wednesday', TaskDate(calc_offset(2)), True],
-   'thu': ['Thursday', TaskDate(calc_offset(3)), True],
-   'fri': ['Friday', TaskDate(calc_offset(4)), True],
-   'sat': ['Saturday', TaskDate(calc_offset(5)), True],
-   'sun': ['Sunday', TaskDate(calc_offset(6)), True],
-   'tod': ['today', TaskDate(0), True],
-   'now': ['today', TaskDate(0), True],
-   'tom': ['tomorrow', TaskDate(1), True],
-   'yes': ['tomorrow', TaskDate(-1), True],
-   'nex': ['next week', TaskDate(7), True],
-   'soo': ['soon', TaskDate(TaskDate.SOON), True],
-   'fut': ['in the future', TaskDate(TaskDate.FUTURE), True],
-   'lat': ['in the future', TaskDate(TaskDate.FUTURE), True],
-}
-
-def end_match_f(s):
-   return lambda t: t.endswith(s + ' ')
-
-def mid_match_f(sl):
-   def m(t):
-      for s in sl:
-         if s in t:
-            return True
-      return False
-   return m
-
-def stripsymb(text):
-   return text.strip()[:-1]
-
-def echo(text):
-   return text
-
-
-TASK_TYPES = [
-   (end_match_f('!'), 'Impt task due', Task.PRIORITY_HIGH, stripsymb),
-   (end_match_f('='), 'Regular task due', Task.PRIORITY_MEDIUM, stripsymb),
-   (end_match_f('-'), 'Idle task due', Task.PRIORITY_LOW, stripsymb),
-   (end_match_f("*"), 'Administrivia due', Task.PRIORITY_ADMIN, stripsymb),
-   (mid_match_f([' hw', ' homework ']), 'Homework due', Task.PRIORITY_MEDIUM, echo),
-   (mid_match_f([' proj']), 'Project due', Task.PRIORITY_HIGH, echo),
-   (mid_match_f([' read ']), 'Reading due', Task.PRIORITY_LOW, echo),
-   (mid_match_f([' final ', ' midterm ', ' exam ']), 'Exam on', Task.PRIORITY_HIGH, echo),
-   (mid_match_f([' quiz ']), 'Quiz on', Task.PRIORITY_MEDIUM, echo),
-   (mid_match_f([' turn in ', ' submit ']), 'Administrivia due', Task.PRIORITY_ADMIN, echo),
-   (mid_match_f([' meet', ' go to ']), 'Appointment on', Task.PRIORITY_ADMIN, echo),
-]
+from config import DATE_MATCH_DICT, TYPE_MATCHES
 
 def parse_date(text):
    x = None
@@ -83,7 +32,7 @@ def parse_date(text):
       except:
          found = False
    elif len(x) >= 3:
-      out, date, found = date_match_dict.get(x[0:3], [out, date, False])
+      out, date, found = DATE_MATCH_DICT.get(x[0:3], [out, date, False])
    else:
       found = False
    if found:
@@ -94,7 +43,7 @@ def derive_label(text):
    ttype = '<?> due'
    prio = Task.PRIORITY_LOW
    text = ' ' + text + ' '
-   for T in TASK_TYPES:
+   for T in TYPE_MATCHES:
       if T[0](text):
          ttype = T[1]
          prio = T[2]

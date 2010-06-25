@@ -2,7 +2,11 @@
 
 from datetime import datetime, timedelta
 
+def days_until_this_weekday(weekday):
+   return (weekday - now().weekday()) % 7
+
 def now():
+## for possible debugging purposes
 #    return datetime.today() + timedelta(days=0, hours=0, minutes=0)
     return datetime.today()
 

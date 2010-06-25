@@ -94,10 +94,11 @@ class Taskhat:
       image.show()
       tool = gtk.ToolButton(abox, 'Tools')
 
-      def NOTIMPLEMENTED(*args):
+      def documentation(*args):
          dialog = gtk.MessageDialog(parent=self.window, flags=gtk.DIALOG_MODAL)
-         dialog.set_markup("NOTIMPLEMENTED")
-         button = gtk.Button("Ok")
+         dialog.set_title('Details')
+         dialog.set_markup('For configuration of task auto-classification, see <b>config.py</b> in the taskhat directory.')
+         button = gtk.Button(stock=gtk.STOCK_CLOSE)
          def dest(*args):
             dialog.destroy()
          button.connect('clicked', dest)
@@ -125,7 +126,7 @@ class Taskhat:
 
       s = 'Help'
       x = gtk.MenuItem(s)
-      x.connect('activate', NOTIMPLEMENTED)
+      x.connect('activate', documentation)
       x.show()
       popup_menu.append(x)
 

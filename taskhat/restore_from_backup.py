@@ -11,7 +11,7 @@ class RestoreFromBackup:
       dialog.set_title("Revert Changes")
       dialog.set_modal(True)
 
-      label = gtk.Label("Restore task list from ")
+      label = gtk.Label("Restore task data from ")
       spin = gtk.combo_box_new_text()
       spin.append_text("last sync")
       spin.append_text("1 day ago")
@@ -40,7 +40,7 @@ class RestoreFromBackup:
       hbox.show()
       dialog.vbox.pack_start(frame)
 
-      cbutton = gtk.Button('Cancel')
+      cbutton = gtk.Button(stock=gtk.STOCK_CANCEL)
       cbutton.grab_focus()
       def cancel(*args):
          self.persist.restore(self.taskhat.insert_task, self.taskhat.update_events,
@@ -50,11 +50,12 @@ class RestoreFromBackup:
       cbutton.show()
       dialog.action_area.pack_end(cbutton)
 
-      button = gtk.Button('Restore')
+      button = self.sbutton = gtk.Button('Sync')
       def sync_changes(*args):
          self.persist.sync()
          dialog.destroy()
       button.connect('clicked', sync_changes)
+      button.set_sensitive(False)
       button.show()
       cbutton.grab_focus()
       dialog.action_area.pack_end(button)
@@ -63,6 +64,7 @@ class RestoreFromBackup:
       days_ago = widget.get_active()
       self.persist.restore(self.taskhat.insert_task, self.taskhat.update_events,
          days_ago, self.taskhat.clear_all)
+      self.sbutton.set_sensitive(True)
 
    def run(self):
       self.dialog.show()

@@ -106,7 +106,7 @@ class EventEditor:
       frame.show()
       frame.add(vbox)
       dialog.vbox.pack_start(frame)
-      button = gtk.Button('Close')
+      button = gtk.Button(stock=gtk.STOCK_CLOSE)
       def dest(*args):
          dialog.destroy()
       button.connect('clicked', dest)
