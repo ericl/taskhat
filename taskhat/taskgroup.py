@@ -278,7 +278,7 @@ class TaskGroup(gtk.VBox):
       self.eventcount = 0
       cal = self.cal = gtk.Calendar()
       cal.set_display_options(gtk.CALENDAR_SHOW_HEADING | gtk.CALENDAR_SHOW_WEEK_NUMBERS | gtk.CALENDAR_SHOW_DAY_NAMES)
-      if task.date.date is not None and task.date.date != TaskDate.FUTURE:
+      if not task.date.special():
          cal.select_month(task.date.date.month - 1, task.date.date.year)
          cal.select_day(task.date.date.day)
       cal.show()
