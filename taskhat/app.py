@@ -8,6 +8,8 @@ import traceback
 import gtk
 import pango
 
+from config import CONFIG
+
 from task import Task
 from persist import Persist
 from event_editor import EventEditor
@@ -34,6 +36,7 @@ try:
       @dbus.service.method('org.riclian.TaskhatInterface',
          in_signature = '', out_signature = '')
       def Present(self):
+         self.app.persist.restore_geometry(self.app.window)
          self.app.window.show()
          self.app.window.present()
 
@@ -124,7 +127,7 @@ class Taskhat:
       x.show()
       popup_menu.append(x)
 
-      s = 'Help'
+      s = 'Information'
       x = gtk.MenuItem(s)
       x.connect('activate', documentation)
       x.show()
@@ -269,7 +272,11 @@ class Taskhat:
       self.entry.set_text('')
 
    def close(self, widget, data=None):
-      gtk.main_quit()
+      if CONFIG['run_in_background']:
+         self.window.hide()
+         return True
+      else:
+         gtk.main_quit()
 
    def about_menu(self, *args):
       dialog = gtk.AboutDialog()

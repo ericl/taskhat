@@ -2,6 +2,11 @@ from task import Task, TaskDate
 
 from time import days_until_this_weekday
 
+# run_in_background: don't quit with window close
+#   - enables fast startup
+#   - may not play nice with wm focus prevention
+CONFIG = {'run_in_background': True}
+
 # starts_with_text: [status text, date, strip_date_from_end]
 DATE_MATCH_DICT = {
    'mon': ['Monday', TaskDate(days_until_this_weekday(0)), True],

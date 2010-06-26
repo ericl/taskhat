@@ -82,9 +82,9 @@ class Priority:
       return self.num == other.num
 
 class Task:
-   PRIORITY_ADMIN = Priority(0, '\xce\xbb')
-   PRIORITY_HIGH = Priority(1, '\xce\xb1')
-   PRIORITY_MEDIUM = Priority(2, '\xce\xb2')
+   PRIORITY_ADMIN = Priority(0, '\xe2\x87\xa1')
+   PRIORITY_HIGH = Priority(1, '\xe2\x87\x91')
+   PRIORITY_MEDIUM = Priority(2, '\xe2\x86\x91')
    PRIORITY_LOW = Priority(3, '-')
 
    def __init__(self, text, date, prio):
