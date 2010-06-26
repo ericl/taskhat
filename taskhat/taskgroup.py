@@ -186,7 +186,7 @@ class TaskGroup(gtk.VBox):
 
    def date_sweep(self):
       if self.events:
-         self.update_title()
+         self.update()
       if self.last_date_sweep.day == now().day:
          return True
       self.last_date_sweep = now()
@@ -200,7 +200,7 @@ class TaskGroup(gtk.VBox):
             iter = self.model.get_iter_first()
          else:
             iter = self.model.iter_next(iter)
-      self.update_title()
+      self.update()
       return True
 
    def where_it_should_go(self, task):
@@ -264,7 +264,7 @@ class TaskGroup(gtk.VBox):
       return False
 
    def pull_styles_from_window(self, *args):
-      self.update_title()
+      self.update()
 
    def prio_changed(self, renderer, path, iter):
       miter = self.model.iter_nth_child(None, int(path))
@@ -372,7 +372,7 @@ class TaskGroup(gtk.VBox):
       else:
          return TaskGroup.groups[i]
 
-   def update_nextbuf(self):
+   def _update_nextbuf(self):
       buf = ''
       next_group = self.get_next_group()
       if not next_group:
@@ -392,6 +392,8 @@ class TaskGroup(gtk.VBox):
          self.nextbuf += buf
 
    def update_eventbuf(self):
+      if self.events:
+         self._update_nextbuf()
       buf = ''
       for event in self.persist.events:
          if event.occurs_in(self.daterange):
@@ -422,22 +424,16 @@ class TaskGroup(gtk.VBox):
       visible = have_tasks or have_events
       if visible:
          self.label.show()
-         self.update_title()
-         if have_events:
-            self.sep.show()
-         else:
-            self.sep.hide()
+         self._update_title()
       else:
          self.label.hide()
          self.sep.hide()
 
-   def update_title(self):
+   def _update_title(self):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'
       title = self.title
       style = self.realizedparent.get_style()
-      self.update_eventbuf()
       if self.events:
-         self.update_nextbuf()
          self.label.set_tooltip_markup(self.nextbuf)
       else:
          self.label.set_tooltip_markup(self.eventbuf)
@@ -447,7 +443,9 @@ class TaskGroup(gtk.VBox):
             % (desc, title, SPACER, 'Sans 10', style.fg[gtk.STATE_NORMAL], self.eventbuf))
          self.ebox.modify_bg(gtk.STATE_NORMAL,
             blend(style.base[gtk.STATE_NORMAL], style.bg[gtk.STATE_SELECTED]))
+         self.sep.show()
       else:
+         self.sep.hide()
          self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
 
