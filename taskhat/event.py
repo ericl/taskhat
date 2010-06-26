@@ -83,8 +83,11 @@ class WeeklyRecurringEvent(Event):
       return map(lambda d: (d - today) % 7, self.days)
 
    def any_in_daterange(self, offsets, daterange):
+      def isnt_offset(val):
+         return val > 7 or val is None
       for x in offsets:
-         if x >= daterange[0] and x <= daterange[1]:
+         if (isnt_offset(daterange[0]) or x >= daterange[0]) \
+            and (isnt_offset(daterange[1]) or x <= daterange[1]):
             return True
       return False
 
