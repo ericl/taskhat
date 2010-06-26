@@ -52,6 +52,7 @@ class TaskGroup(gtk.VBox):
       self.title = name
       self.events = events
       self.eventbuf = ''
+      self.nextbuf = ''
       self.persist = persist
       self.daterange = daterange
       self.model = gtk.ListStore(gobject.TYPE_PYOBJECT)
@@ -364,6 +365,32 @@ class TaskGroup(gtk.VBox):
       else:
          return '<span strikethrough="true">%s</span>' % str(event)
 
+   def get_next_group(self):
+      i = TaskGroup.groups.index(self) + 1
+      if i >= len(TaskGroup.groups):
+         return None
+      else:
+         return TaskGroup.groups[i]
+
+   def update_nextbuf(self):
+      buf = ''
+      next_group = self.get_next_group()
+      if not next_group:
+         self.nextbuf = ''
+         return
+      for event in self.persist.events:
+         if event.occurs_in(next_group.daterange):
+            if buf:
+               buf += SPACER
+            buf += '\xc2\xbb  ' + str(event)
+      if buf:
+         buf += SPACER_NO_NEWLINE
+      if not buf:
+         self.nextbuf = 'no events %s' % next_group.title.lower()
+      else:
+         self.nextbuf = '%s:\n' % next_group.title
+         self.nextbuf += buf
+
    def update_eventbuf(self):
       buf = ''
       for event in self.persist.events:
@@ -410,7 +437,8 @@ class TaskGroup(gtk.VBox):
       style = self.realizedparent.get_style()
       self.update_eventbuf()
       if self.events:
-         self.label.set_tooltip_text('')
+         self.update_nextbuf()
+         self.label.set_tooltip_markup(self.nextbuf)
       else:
          self.label.set_tooltip_markup(self.eventbuf)
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
