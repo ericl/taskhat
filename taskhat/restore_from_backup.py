@@ -13,13 +13,16 @@ class RestoreFromBackup:
 
       label = gtk.Label("Restore task data from ")
       spin = gtk.combo_box_new_text()
-      spin.append_text("last sync")
-      spin.append_text("1 day ago")
-      spin.append_text("2 days ago")
-      spin.append_text("3 days ago")
-      spin.append_text("4 days ago")
-      spin.append_text("5 days ago")
-      spin.append_text("6 days ago")
+
+      self.spinmap = {}
+      data = persist.scan_past()
+      data.sort(lambda a, b: (b[0] - a[0]).days)
+      i = 0
+      for date, key, path in data:
+         spin.append_text(key)
+         self.spinmap[i] = path
+         i += 1
+
       spin.connect('changed', self.change_select)
       label.show()
       spin.show()
@@ -60,10 +63,14 @@ class RestoreFromBackup:
       cbutton.grab_focus()
       dialog.action_area.pack_end(button)
 
+   def key_to_path(self, key):
+      return self.spinmap[key]
+
    def change_select(self, widget):
-      days_ago = widget.get_active()
+      key = widget.get_active()
+      path = self.key_to_path(key)
       self.persist.restore(self.taskhat.insert_task, self.taskhat.update_events,
-         days_ago, self.taskhat.clear_all)
+         path, self.taskhat.clear_all)
       self.sbutton.set_sensitive(True)
 
    def run(self):

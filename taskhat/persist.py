@@ -1,7 +1,7 @@
 import os
 from pickle import loads, dumps
 
-from time import now
+from time import now, get_today
 from event import event_cmp
 
 class Persist:
@@ -42,19 +42,38 @@ class Persist:
       swap = self.path + '~'
       backup = self.path + '.backup-%d' % now().weekday()
       with open(swap, 'w') as s:
-         s.write(dumps({'tasks': self.tasks, 'events': self.events}))
+         s.write(dumps({'tasks': self.tasks, 'events': self.events, 'day': get_today()}))
          if os.path.exists(self.path):
             os.rename(self.path, backup)
          os.rename(swap, self.path)
 
-   def get_path_n_days_ago(self, days_ago):
-      num = (now().weekday() - days_ago) % 7
-      return '%s.backup-%d' % (self.path, num)
+   def date_to_key(self, date):
+      diff = get_today() - date
+      if diff.days < 0:
+         return 'the future'
+      elif diff.days == 0:
+         return 'last sync'
+      else:
+         return '%d days ago' % diff.days
 
-   def restore(self, f_insert, f_notify_events_loaded, days_ago=None, f_clear=None):
+   def scan_past(self):
+      paths = map(lambda d: '%s.backup-%d' % (self.path, d), range(0,7))
+      past = []
+      for path in paths:
+         try:
+            with open(path, 'r') as f:
+               date = loads(f.read())['day']
+               past.append((date, self.date_to_key(date), path))
+         except IOError:
+            pass
+         except KeyError:
+            pass
+      return past
+
+   def restore(self, f_insert, f_notify_events_loaded, path=None, f_clear=None):
       saved = self.path
-      if days_ago is not None:
-         saved = self.get_path_n_days_ago(days_ago)
+      if path is not None:
+         saved = path
       if f_clear:
          f_clear()
          self.tasks = []
