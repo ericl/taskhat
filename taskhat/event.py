@@ -51,6 +51,7 @@ class WeeklyRecurringEvent(Event):
    def parse_timestring(cls, timestring):
       hours = 0
       minutes = 0
+      timestring = filter(lambda c: c.isdigit() or c in ':apm', timestring)
       if timestring.endswith('pm') or timestring.endswith('am'):
          if timestring.endswith('pm'):
             hours += 12
