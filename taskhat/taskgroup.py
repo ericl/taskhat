@@ -50,7 +50,7 @@ class TaskGroup(gtk.VBox):
       TaskGroup.groups.append(self)
       self.top = top
       self.title = name
-      self.events = events
+      self.show_events = events
       self.eventbuf = ''
       self.nextbuf = ''
       self.persist = persist
@@ -70,7 +70,7 @@ class TaskGroup(gtk.VBox):
       self.label.set_padding(3,3)
       self.pack_start(self.ebox, False, False)
       self.sep = gtk.HSeparator()
-      if self.events:
+      if self.show_events:
          self.pack_start(self.sep, False, False)
          l2 = gtk.Label()
          l2.set_markup(SPACER_NO_NEWLINE)
@@ -185,7 +185,7 @@ class TaskGroup(gtk.VBox):
       self.garbage_num = 0
 
    def date_sweep(self):
-      if self.events:
+      if self.show_events:
          self.update()
       if self.last_date_sweep.day == now().day:
          return True
@@ -392,21 +392,23 @@ class TaskGroup(gtk.VBox):
          self.nextbuf += buf
 
    def update_eventbuf(self):
-      if self.events:
+      if self.show_events:
          self._update_nextbuf()
       buf = ''
       for event in self.persist.events:
          if event.occurs_in(self.daterange):
             if buf:
                buf += SPACER
-            if self.events:
+            if self.show_events:
                buf += '  \xc2\xbb  ' + self.format_event_for_today(event)
             else:
                buf += '\xc2\xbb  ' + str(event)
       if buf:
          buf += SPACER_NO_NEWLINE
-      if not self.events and not buf:
+      if not self.show_events and not buf:
          self.eventbuf = 'no events'
+      elif not buf:
+         self.eventbuf = ' (no events)'
       else:
          self.eventbuf = buf
 
@@ -420,8 +422,7 @@ class TaskGroup(gtk.VBox):
       if events_changed:
          self.update_eventbuf()
       have_tasks = len(self.model)
-      have_events = self.events and self.eventbuf
-      visible = have_tasks or have_events
+      visible = have_tasks or self.show_events
       if visible:
          self.label.show()
          self._update_title()
@@ -433,12 +434,12 @@ class TaskGroup(gtk.VBox):
       desc = 'Sans 15' if self.top else 'Sans Bold 15'
       title = self.title
       style = self.realizedparent.get_style()
-      if self.events:
+      if self.show_events:
          self.label.set_tooltip_markup(self.nextbuf)
       else:
          self.label.set_tooltip_markup(self.eventbuf)
       self.label.modify_fg(gtk.STATE_NORMAL, style.bg[gtk.STATE_SELECTED])
-      if self.events and self.eventbuf:
+      if self.show_events:
          self.label.set_markup('<span font_desc="%s">%s</span>%s<span font_desc="%s" foreground="%s">%s</span>'
             % (desc, title, SPACER, 'Sans 10', style.fg[gtk.STATE_NORMAL], self.eventbuf))
          self.ebox.modify_bg(gtk.STATE_NORMAL,

@@ -1,4 +1,4 @@
-from time import make_time, now, make_timedelta
+from time import make_timedelta, get_today
 
 class TaskDate:
    FUTURE = 999999
@@ -13,15 +13,10 @@ class TaskDate:
       elif offset_days is TaskDate.SOON:
          self.date = TaskDate.SOON
       else:
-         self.date = self.get_today() + make_timedelta(offset_days)
+         self.date = get_today() + make_timedelta(offset_days)
    
    def special(self):
       return self.date is None or self.date == TaskDate.FUTURE or self.date == TaskDate.SOON
-
-   def get_today(self):
-      curr = now()
-      today = make_time(curr.year, curr.month, curr.day)
-      return today
 
    def offset(self):
       if self.date is None:
@@ -30,7 +25,7 @@ class TaskDate:
          return TaskDate.FUTURE
       elif self.date == TaskDate.SOON:
          return 3
-      return (self.date - self.get_today()).days
+      return (self.date - get_today()).days
 
    def markup(self):
       """Returns same text as __str__, but with markup to hide extraneous text.

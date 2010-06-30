@@ -13,5 +13,10 @@ def now():
 def make_time(*args, **kwargs):
     return datetime(*args, **kwargs)
 
+def get_today():
+   curr = now()
+   today = make_time(curr.year, curr.month, curr.day)
+   return today
+
 def make_timedelta(*args, **kwargs):
     return timedelta(*args, **kwargs)

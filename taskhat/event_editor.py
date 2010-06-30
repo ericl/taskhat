@@ -140,7 +140,7 @@ class EventEditor:
       self.persist.sync()
 
    def update_button_state(self):
-      miter = self.model.iter_nth_child(None, len(self.model)-1)
+      miter = self.model.iter_nth_child(None, len(self.model)-1) if len(self.model) > 0 else None
       if not miter or self.model.get_value(miter, 0).text:
          self.button.set_sensitive(True)
       else:
