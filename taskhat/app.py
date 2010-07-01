@@ -39,6 +39,7 @@ try:
          self.app.persist.restore_geometry(self.app.window)
          self.app.window.show()
          self.app.window.present()
+         self.app.entry.grab_focus()
 
 except ImportError:
    DBUS_OK = False
