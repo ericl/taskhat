@@ -1,5 +1,7 @@
 from time import now, make_timedelta
 
+from taskgroup import escape
+
 weekday_map = {0: 'M', 1: 'Tu', 2: 'W', 3: 'Th', 4: 'F', 5: 'Sa', 6: 'Su'}
 
 def str_enum_weekdays(i):
@@ -123,7 +125,7 @@ class WeeklyRecurringEvent(Event):
 
    def __str__(self):
       if self.tdelta.seconds:
-         return '%s<i> - %s</i>' % (self.text, self.get_timestring())
+         return '%s<i> - %s</i>' % (escape(self.text), self.get_timestring())
       return '%s' % (self.text)
 
 # vim: et sw=3

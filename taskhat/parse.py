@@ -39,7 +39,8 @@ def parse_date(text):
       text = ' '.join(text.split()[:-1])
    return out, text, date
 
-def derive_label(text):
+def label_from_string(text):
+   text = text.strip()
    ttype = '<?> due'
    prio = Task.PRIORITY_LOW
    text = ' ' + text + ' '
@@ -51,5 +52,12 @@ def derive_label(text):
          break
    out, text, date = parse_date(text)
    return (" %s %s" % (ttype, out)), text.strip(), date, prio
+
+def task_from_string(text):
+   res = label_from_string(text)
+   text = res[1]
+   if not text:
+      text = '<?>'
+   return Task(text, res[2], res[3])
 
 # vim: et sw=3

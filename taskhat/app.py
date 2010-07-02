@@ -15,7 +15,7 @@ from persist import Persist
 from event_editor import EventEditor
 from restore_from_backup import RestoreFromBackup
 from taskgroup import TaskGroup, escape
-from parse import derive_label
+from parse import label_from_string, task_from_string
 
 DBUS_OK = True
 
@@ -240,9 +240,6 @@ class Taskhat:
    def update_group_styles(self, args, x):
       self.ebox3.modify_bg(gtk.STATE_NORMAL, self.window.get_style().base[gtk.STATE_NORMAL])
 
-   def validate_entry_text(self, contents):
-      return contents.strip()
-
    def get_active_text(self, combobox):
       model = combobox.get_model()
       active = combobox.get_active()
@@ -251,10 +248,10 @@ class Taskhat:
       return model[active][0]
 
    def entry_changed(self, widget, data=None):
-      text = self.validate_entry_text(widget.get_text())
+      text = self.entry.get_text().strip()
       if text:
          self.abutton.set_sensitive(True)
-         self.status.set_label(derive_label(text)[0])
+         self.status.set_label(label_from_string(text)[0])
       else:
          self.abutton.set_sensitive(False)
          self.status.set_label(Taskhat.HELP_STRING)
@@ -263,11 +260,7 @@ class Taskhat:
       TaskGroup.groups[0].smart_assign(task)
 
    def entry_done(self, widget, data=None):
-      res = derive_label(self.validate_entry_text(self.entry.get_text()))
-      text = res[1]
-      if not text:
-         text = '<?>'
-      task = Task(text, res[2], res[3])
+      task = task_from_string(self.entry.get_text())
       self.insert_task(task)
       self.persist.save(task)
       self.entry.set_text('')
