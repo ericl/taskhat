@@ -48,6 +48,19 @@ except ImportError:
 def run_app():
    if DBUS_OK:
       try:
+         import gconf
+         client = gconf.client_get_default()
+         key='/apps/compiz/general/screen0/options/focus_prevention_match'
+         val = client.get_string(key)
+         if 'Taskhat' not in val:
+            val += ' & !(title=Taskhat)'
+         client.set_string(key, val)
+      except Exception, e:
+         print e
+         print 'WARNING: Failed to add exception to compiz focus prevention rules.'
+         print 'It would be good idea to unset run_in_background in config.py'
+         pass
+      try:
          sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
       except Exception, e:
          if 'ServiceUnknown' in str(e):
