@@ -32,7 +32,10 @@ def parse_date(text):
       except:
          found = False
    elif len(x) >= 3:
-      out, date, found = DATE_MATCH_DICT.get(x[0:3], [out, date, False])
+      o,d,f = out, date, found
+      verify, out, date, found = DATE_MATCH_DICT.get(x[0:3], ['', out, date, False])
+      if not verify.startswith(x):
+         out, date, found = o, d, f
    else:
       found = False
    if found:

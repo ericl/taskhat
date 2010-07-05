@@ -9,21 +9,21 @@ CONFIG = {'run_in_background': True}
 
 # starts_with_text: [status text, date, strip_date_from_end]
 DATE_MATCH_DICT = {
-   'mon': ['Monday', TaskDate(days_until_this_weekday(0)), True],
-   'tue': ['Tuesday', TaskDate(days_until_this_weekday(1)), True],
-   'wed': ['Wednesday', TaskDate(days_until_this_weekday(2)), True],
-   'thu': ['Thursday', TaskDate(days_until_this_weekday(3)), True],
-   'fri': ['Friday', TaskDate(days_until_this_weekday(4)), True],
-   'sat': ['Saturday', TaskDate(days_until_this_weekday(5)), True],
-   'sun': ['Sunday', TaskDate(days_until_this_weekday(6)), True],
-   'tod': ['today', TaskDate(0), True],
-   'now': ['today', TaskDate(0), True],
-   'tom': ['tomorrow', TaskDate(1), True],
-   'yes': ['tomorrow', TaskDate(-1), True],
-   'nex': ['next week', TaskDate(7), True],
-   'soo': ['soon', TaskDate(TaskDate.SOON), True],
-   'fut': ['in the future', TaskDate(TaskDate.FUTURE), True],
-   'lat': ['in the future', TaskDate(TaskDate.FUTURE), True],
+   'mon': ['monday', 'Monday', TaskDate(days_until_this_weekday(0)), True],
+   'tue': ['tuesday', 'Tuesday', TaskDate(days_until_this_weekday(1)), True],
+   'wed': ['wednesday', 'Wednesday', TaskDate(days_until_this_weekday(2)), True],
+   'thu': ['thursday', 'Thursday', TaskDate(days_until_this_weekday(3)), True],
+   'fri': ['friday', 'Friday', TaskDate(days_until_this_weekday(4)), True],
+   'sat': ['saturday', 'Saturday', TaskDate(days_until_this_weekday(5)), True],
+   'sun': ['sunday', 'Sunday', TaskDate(days_until_this_weekday(6)), True],
+   'tod': ['today', 'today', TaskDate(0), True],
+   'now': ['now', 'today', TaskDate(0), True],
+   'tom': ['tomorrow', 'tomorrow', TaskDate(1), True],
+   'yes': ['yesterday', 'yesterday', TaskDate(-1), True],
+   'nex': ['next week', 'next week', TaskDate(7), True],
+   'soo': ['soon', 'soon', TaskDate(TaskDate.SOON), True],
+   'fut': ['future', 'in the future', TaskDate(TaskDate.FUTURE), True],
+   'lat': ['later', 'in the future', TaskDate(TaskDate.FUTURE), True],
 }
 
 def end_match_f(s):
