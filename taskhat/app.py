@@ -58,7 +58,8 @@ def run_app():
       except Exception, e:
          print e
          print 'WARNING: Failed to add exception to compiz focus prevention rules.'
-         print 'It would be good idea to unset run_in_background in config.py'
+         print 'Disabling run in background mode.'
+         CONFIG['run_in_background'] = False
          pass
       try:
          sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
