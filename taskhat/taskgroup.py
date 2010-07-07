@@ -124,18 +124,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('has_entry', False)
       renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
       date_store = self.date_store = gtk.ListStore(gobject.TYPE_STRING)
-      date_store.set(date_store.append(), 0, "Choose Date...")
-      date_store.set(date_store.append(), 0, str(TaskDate(None)))
-      date_store.set(date_store.append(), 0, str(TaskDate(0)))
-      date_store.set(date_store.append(), 0, str(TaskDate(1)))
-      date_store.set(date_store.append(), 0, str(TaskDate(2)))
-      date_store.set(date_store.append(), 0, str(TaskDate(3)))
-      date_store.set(date_store.append(), 0, str(TaskDate(4)))
-      date_store.set(date_store.append(), 0, str(TaskDate(5)))
-      date_store.set(date_store.append(), 0, str(TaskDate(6)))
-      date_store.set(date_store.append(), 0, str(TaskDate(7)))
-      date_store.set(date_store.append(), 0, str(TaskDate(TaskDate.SOON)))
-      date_store.set(date_store.append(), 0, str(TaskDate(TaskDate.FUTURE)))
+      self.update_date_store()
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
@@ -184,11 +173,28 @@ class TaskGroup(gtk.VBox):
       # all being-deleted rows are gone
       self.garbage_num = 0
 
+   def update_date_store(self):
+      ds = self.date_store
+      ds.clear()
+      ds.set(ds.append(), 0, "Choose Date...")
+      ds.set(ds.append(), 0, str(TaskDate(None)))
+      ds.set(ds.append(), 0, str(TaskDate(0)))
+      ds.set(ds.append(), 0, str(TaskDate(1)))
+      ds.set(ds.append(), 0, str(TaskDate(2)))
+      ds.set(ds.append(), 0, str(TaskDate(3)))
+      ds.set(ds.append(), 0, str(TaskDate(4)))
+      ds.set(ds.append(), 0, str(TaskDate(5)))
+      ds.set(ds.append(), 0, str(TaskDate(6)))
+      ds.set(ds.append(), 0, str(TaskDate(7)))
+      ds.set(ds.append(), 0, str(TaskDate(TaskDate.SOON)))
+      ds.set(ds.append(), 0, str(TaskDate(TaskDate.FUTURE)))
+
    def date_sweep(self):
       if self.show_events:
          self.update()
       if self.last_date_sweep.day == now().day:
          return True
+      self.update_date_store()
       self.last_date_sweep = now()
       iter = self.model.get_iter_first()
       while iter:
