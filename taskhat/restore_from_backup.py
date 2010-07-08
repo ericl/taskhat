@@ -8,6 +8,7 @@ class RestoreFromBackup:
 
       dialog = self.dialog = gtk.Dialog(parent=window)
       dialog.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+      dialog.set_property('resizable', False)
       dialog.set_title("Revert Changes")
       dialog.set_modal(True)
 
