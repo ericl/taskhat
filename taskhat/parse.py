@@ -34,7 +34,7 @@ def parse_date(text):
    elif len(x) >= 3:
       o,d,f = out, date, found
       verify, out, date, found = DATE_MATCH_DICT.get(x[0:3], ['', out, date, False])
-      if not verify.startswith(x):
+      if found and not verify.startswith(x):
          out, date, found = o, d, f
    else:
       found = False
