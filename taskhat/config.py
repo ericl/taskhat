@@ -7,23 +7,23 @@ from time import days_until_this_weekday
 #   - may not play nice with wm focus prevention
 CONFIG = {'run_in_background': True}
 
-# starts_with_text: [status text, date, strip_date_from_end]
+# starts_with_text: [status text, f_date, strip_date_from_end]
 DATE_MATCH_DICT = {
-   'mon': ['monday', 'Monday', TaskDate(days_until_this_weekday(0)), True],
-   'tue': ['tuesday', 'Tuesday', TaskDate(days_until_this_weekday(1)), True],
-   'wed': ['wednesday', 'Wednesday', TaskDate(days_until_this_weekday(2)), True],
-   'thu': ['thursday', 'Thursday', TaskDate(days_until_this_weekday(3)), True],
-   'fri': ['friday', 'Friday', TaskDate(days_until_this_weekday(4)), True],
-   'sat': ['saturday', 'Saturday', TaskDate(days_until_this_weekday(5)), True],
-   'sun': ['sunday', 'Sunday', TaskDate(days_until_this_weekday(6)), True],
-   'tod': ['today', 'today', TaskDate(0), True],
-   'now': ['now', 'today', TaskDate(0), True],
-   'tom': ['tomorrow', 'tomorrow', TaskDate(1), True],
-   'yes': ['yesterday', 'yesterday', TaskDate(-1), True],
-   'nex': ['next week', 'next week', TaskDate(7), True],
-   'soo': ['soon', 'soon', TaskDate(TaskDate.SOON), True],
-   'fut': ['future', 'in the future', TaskDate(TaskDate.FUTURE), True],
-   'lat': ['later', 'in the future', TaskDate(TaskDate.FUTURE), True],
+   'mon': ['monday', 'Monday', lambda: TaskDate(days_until_this_weekday(0)), True],
+   'tue': ['tuesday', 'Tuesday', lambda: TaskDate(days_until_this_weekday(1)), True],
+   'wed': ['wednesday', 'Wednesday', lambda: TaskDate(days_until_this_weekday(2)), True],
+   'thu': ['thursday', 'Thursday', lambda: TaskDate(days_until_this_weekday(3)), True],
+   'fri': ['friday', 'Friday', lambda: TaskDate(days_until_this_weekday(4)), True],
+   'sat': ['saturday', 'Saturday', lambda: TaskDate(days_until_this_weekday(5)), True],
+   'sun': ['sunday', 'Sunday', lambda: TaskDate(days_until_this_weekday(6)), True],
+   'tod': ['today', 'today', lambda: TaskDate(0), True],
+   'now': ['now', 'today', lambda: TaskDate(0), True],
+   'tom': ['tomorrow', 'tomorrow', lambda: TaskDate(1), True],
+   'yes': ['yesterday', 'yesterday', lambda: TaskDate(-1), True],
+   'nex': ['next week', 'next week', lambda: TaskDate(7), True],
+   'soo': ['soon', 'soon', lambda: TaskDate(TaskDate.SOON), True],
+   'fut': ['future', 'in the future', lambda: TaskDate(TaskDate.FUTURE), True],
+   'lat': ['later', 'in the future', lambda: TaskDate(TaskDate.FUTURE), True],
 }
 
 def end_match_f(s):
