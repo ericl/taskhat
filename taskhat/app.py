@@ -274,10 +274,12 @@ class Taskhat:
       TaskGroup.groups[0].smart_assign(task)
 
    def entry_done(self, widget, data=None):
-      task = task_from_string(self.entry.get_text())
-      self.insert_task(task)
-      self.persist.save(task)
-      self.entry.set_text('')
+      text = self.entry.get_text().strip()
+      if text:
+         task = task_from_string(self.entry.get_text())
+         self.insert_task(task)
+         self.persist.save(task)
+         self.entry.set_text('')
 
    def close(self, widget, data=None):
       if CONFIG['run_in_background']:
