@@ -283,6 +283,8 @@ class Taskhat:
 
    def close(self, widget, data=None):
       if CONFIG['run_in_background']:
+         map(TaskGroup.remove_removed, TaskGroup.groups)
+         self.entry.set_text('')
          self.window.hide()
          return True
       else:

@@ -243,6 +243,15 @@ class TaskGroup(gtk.VBox):
             return comp
       return 0
 
+   def remove_removed(self):
+      """remove all tasks queued for removal"""
+      for i, x in enumerate(self.model):
+         task = x[0]
+         if task.removed:
+            self.model.row_changed(i, x.iter)
+            self.remove(x.iter)
+      assert self.garbage_num == 0
+
    def garbage_sweep_init(self):
       if self.garbage_num:
          self.garbage_num += 1
