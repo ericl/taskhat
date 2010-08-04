@@ -180,8 +180,7 @@ class Taskhat:
 
       TaskGroup('Today', self.window, self.persist, (None, 0), events=True)
       TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
-      TaskGroup('In Two Days', self.window, self.persist, (2, 2))
-      TaskGroup('Next 7 Days', self.window, self.persist, (3, 7))
+      TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
       TaskGroup('Future', self.window, self.persist, (8, None))
       for group in TaskGroup.groups:
          box3.pack_start(group, False, False)
