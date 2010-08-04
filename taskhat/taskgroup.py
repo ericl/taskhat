@@ -60,6 +60,7 @@ class TaskGroup(gtk.VBox):
       self.ebox = gtk.EventBox()
       self.label = gtk.Label()
       self.realizedparent = realizedparent
+      self.concurrent_modification = False
 
       self.model.set_sort_func(42, self.sort_func)
       self.model.set_sort_column_id(42, gtk.SORT_DESCENDING)
@@ -115,9 +116,13 @@ class TaskGroup(gtk.VBox):
       prio.set_cell_data_func(renderer, prioformatter)
       prio.set_min_width(30)
       renderer.connect('changed', self.prio_changed)
+      
+      def init_editing(*args):
+         self.concurrent_modification = False
 
       # XXX need this to get rid of conflict with row_changed()?
-      renderer.connect('editing-started', lambda *x: None)
+      # also adding edit lock to stop updating old iters
+      renderer.connect('editing-started', init_editing)
 
       renderer = gtk.CellRendererCombo()
       renderer.set_property('editable', True)
@@ -134,7 +139,8 @@ class TaskGroup(gtk.VBox):
       renderer.connect('changed', self.date_changed)
 
       # XXX need this to get rid of conflict with row_changed()?
-      renderer.connect('editing-started', lambda *x: None)
+      # also adding edit lock to stop updating old iters
+      renderer.connect('editing-started', init_editing)
 
       renderer = gtk.CellRendererPixbuf()
       notes = gtk.TreeViewColumn("Notes", renderer)
@@ -282,6 +288,8 @@ class TaskGroup(gtk.VBox):
       self.update()
 
    def prio_changed(self, renderer, path, iter):
+      if self.concurrent_modification:
+         return
       miter = self.model.iter_nth_child(None, int(path))
       task = self.model.get_value(miter, 0)
       task.prio = task.prio_match(self.prio_store.get_value(iter, 0))
@@ -339,6 +347,8 @@ class TaskGroup(gtk.VBox):
       cal.connect('day-selected', cal_selected)
 
    def date_changed(self, renderer, path, iter):
+      if self.concurrent_modification:
+         return
       miter = self.model.iter_nth_child(None, int(path))
       task = self.model.get_value(miter, 0)
       value = self.date_store.get_value(iter, 0)
@@ -428,6 +438,7 @@ class TaskGroup(gtk.VBox):
          self.eventbuf = buf
 
    def add(self, task):
+      self.concurrent_modification = True
       self.model.set(self.model.append(), 0, task)
       self.update(events_changed=False)
       if task.removed:
@@ -466,6 +477,7 @@ class TaskGroup(gtk.VBox):
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
 
    def remove(self, miter):
+      self.concurrent_modification = True
       task = self.model.get_value(miter, 0)
       self.model.remove(miter)
       self.update(events_changed=False)
