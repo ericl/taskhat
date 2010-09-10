@@ -10,7 +10,7 @@ import pango
 
 from config import CONFIG
 
-from task import Task
+from task import Task, TaskDate
 from persist import Persist
 from event_editor import EventEditor
 from restore_from_backup import RestoreFromBackup
@@ -178,7 +178,8 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      TaskGroup('Today', self.window, self.persist, (None, 0), events=True)
+      TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE+1, -1))
+      TaskGroup('Today', self.window, self.persist, (None, 0), events=CONFIG['show_recurring_events'])
       TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
       TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
       TaskGroup('Future', self.window, self.persist, (8, None))
