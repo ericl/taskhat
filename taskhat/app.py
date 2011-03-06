@@ -50,7 +50,7 @@ def run_app():
       try:
          import gconf
          client = gconf.client_get_default()
-         key='/apps/compiz/general/screen0/options/focus_prevention_match'
+         key='/apps/compiz-1/general/screen0/options/focus_prevention_match'
          val = client.get_string(key)
          if 'Taskhat' not in val:
             val += ' & !(title=Taskhat)'
@@ -60,7 +60,6 @@ def run_app():
          print 'WARNING: Failed to add exception to compiz focus prevention rules.'
          print 'Disabling run in background mode.'
          CONFIG['run_in_background'] = False
-         pass
       try:
          sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
       except Exception, e:
@@ -83,7 +82,7 @@ class Taskhat:
       self.window = gtk.Window()
       self.window.connect('delete_event', self.close)
       self.window.set_title('Taskhat')
-      self.window.set_icon_name('stock_notes')
+      self.window.set_icon_name('gtg-panel')
       self.window.realize()
 
       box1 = gtk.VBox()
@@ -179,9 +178,10 @@ class Taskhat:
       scrolled_window.add_with_viewport(ebox3)
 
       TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE+1, -1))
-      TaskGroup('Today', self.window, self.persist, (None, 0), events=CONFIG['show_recurring_events'])
-      TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
-      TaskGroup('Next 7 Days', self.window, self.persist, (2, 7))
+      TaskGroup('Today &amp; Tomorrow', self.window, self.persist, (None, 1), events=CONFIG['show_recurring_events'])
+#      TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
+      TaskGroup('Next few days', self.window, self.persist, (2, 5))
+      TaskGroup('Next week', self.window, self.persist, (6, 14))
       TaskGroup('Future', self.window, self.persist, (8, None))
       for group in TaskGroup.groups:
          box3.pack_start(group, False, False)
@@ -281,7 +281,11 @@ class Taskhat:
          self.persist.save(task)
          self.entry.set_text('')
 
+   counter = 0 # XXX wtf on natty? TODO figure ot
    def close(self, widget, data=None):
+      if not self.counter:
+         self.counter += 1
+         return
       if CONFIG['run_in_background']:
          map(TaskGroup.remove_removed, TaskGroup.groups)
          self.entry.set_text('')

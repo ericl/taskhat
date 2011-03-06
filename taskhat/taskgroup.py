@@ -133,7 +133,7 @@ class TaskGroup(gtk.VBox):
       renderer.set_property('model', date_store)
       renderer.set_property('text_column', 0)
       dates = gtk.TreeViewColumn("Dates")
-      dates.set_min_width(90)
+      dates.set_min_width(100)
       dates.pack_start(renderer, True)
       dates.set_cell_data_func(renderer, dateformatter)
       renderer.connect('changed', self.date_changed)
@@ -152,7 +152,7 @@ class TaskGroup(gtk.VBox):
 
       renderer = gtk.CellRendererText()
       notes.pack_end(renderer, True)
-      notes.set_min_width(25)
+      notes.set_min_width(20)
 
       self.tree_view.append_column(checkbox)
       self.tree_view.append_column(prio)
@@ -475,6 +475,9 @@ class TaskGroup(gtk.VBox):
          self.sep.hide()
          self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
+      # you would think this is a given, but the Ubuntu 10.04 Ambiance theme
+      # has a bug where tree_views look black
+      self.tree_view.set_style(style)
 
    def remove(self, miter):
       self.concurrent_modification = True
