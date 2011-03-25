@@ -475,7 +475,7 @@ class TaskGroup(gtk.VBox):
          self.sep.hide()
          self.label.set_markup('<span font_desc="%s">%s</span>' % (desc, title))
          self.ebox.modify_bg(gtk.STATE_NORMAL, style.base[gtk.STATE_NORMAL])
-      # you would think this is a given, but the Ubuntu 10.04 Ambiance theme
+      # you would think this is a given, but the Ubuntu 11.04 Ambiance theme
       # has a bug where tree_views look black
       self.tree_view.set_style(style)
 

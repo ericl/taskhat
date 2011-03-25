@@ -281,11 +281,7 @@ class Taskhat:
          self.persist.save(task)
          self.entry.set_text('')
 
-   counter = 0 # XXX wtf on natty? TODO figure ot
    def close(self, widget, data=None):
-      if not self.counter:
-         self.counter += 1
-         return
       if CONFIG['run_in_background']:
          map(TaskGroup.remove_removed, TaskGroup.groups)
          self.entry.set_text('')
