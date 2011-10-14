@@ -89,6 +89,13 @@ class Task:
       self.removed = False
       self.prefix = ''
 
+   def to_human(self):
+      return '%s | %s | %s' % (self.prio, self.text, self.date)
+
+   @staticmethod
+   def from_human(text):
+      raise NotImplementedError
+
    def prio_match(self, text):
       if text == Task.PRIORITY_LOW.name:
          return Task.PRIORITY_LOW
@@ -115,5 +122,8 @@ class Task:
       if value == str(n):
          return n
       return None
+
+   def __str__(self):
+      return self.text
 
 # vim: et sw=3

@@ -54,7 +54,7 @@ class RestoreFromBackup:
       cbutton.show()
       dialog.action_area.pack_end(cbutton)
 
-      button = self.sbutton = gtk.Button('Sync')
+      button = self.sbutton = gtk.Button('Restore')
       def sync_changes(*args):
          self.persist.sync()
          dialog.destroy()

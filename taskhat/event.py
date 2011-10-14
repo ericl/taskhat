@@ -41,6 +41,13 @@ class WeeklyRecurringEvent(Event):
       self.days = days
       self.tdelta = tdelta
 
+   def to_human(self):
+      return '%s | %s | %s' % (self.text, self.days, self.tdelta)
+
+   @staticmethod
+   def from_human(text):
+      raise NotImplementedError
+
    @classmethod
    def parse_datestring(cls, datestring):
       days = []

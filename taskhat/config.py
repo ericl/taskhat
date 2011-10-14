@@ -6,8 +6,8 @@ from time import days_until_this_weekday
 #   - enables fast startup
 #   - may not play nice with wm focus prevention
 # show_recurring_events: show daily schedule and such in main window
-CONFIG = {'run_in_background': True,
-          'show_recurring_events': False}
+CONFIG = {'run_in_background': False,
+          'show_recurring_events': True}
 
 # starts_with_text: [status text, f_date, strip_date_from_end]
 DATE_MATCH_DICT = {

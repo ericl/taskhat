@@ -215,7 +215,8 @@ class TaskGroup(gtk.VBox):
       self.update()
       return True
 
-   def where_it_should_go(self, task):
+   @staticmethod
+   def where_it_should_go(task):
       assigned = TaskGroup.groups[0]
       offset = task.date.offset()
       for group in TaskGroup.groups:
@@ -226,7 +227,7 @@ class TaskGroup(gtk.VBox):
       return assigned
 
    def smart_assign(self, task):
-      self.where_it_should_go(task).add(task)
+      TaskGroup.where_it_should_go(task).add(task)
 
    def sort_func(self, model, iter1, iter2):
       task1 = model.get_value(iter1, 0)

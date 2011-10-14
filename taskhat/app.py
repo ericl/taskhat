@@ -10,12 +10,13 @@ import pango
 
 from config import CONFIG
 
-from task import Task, TaskDate
+from task import Task
 from persist import Persist
 from event_editor import EventEditor
 from restore_from_backup import RestoreFromBackup
 from taskgroup import TaskGroup, escape
 from parse import label_from_string, task_from_string
+import file_api
 
 DBUS_OK = True
 
@@ -47,19 +48,20 @@ except ImportError:
 
 def run_app():
    if DBUS_OK:
-      try:
-         import gconf
-         client = gconf.client_get_default()
-         key='/apps/compiz-1/general/screen0/options/focus_prevention_match'
-         val = client.get_string(key)
-         if 'Taskhat' not in val:
-            val += ' & !(title=Taskhat)'
-         client.set_string(key, val)
-      except Exception, e:
-         print e
-         print 'WARNING: Failed to add exception to compiz focus prevention rules.'
-         print 'Disabling run in background mode.'
-         CONFIG['run_in_background'] = False
+      if CONFIG['run_in_background']:
+         try:
+            import gconf
+            client = gconf.client_get_default()
+            key='/apps/compiz-1/general/screen0/options/focus_prevention_match'
+            val = client.get_string(key)
+            if 'Taskhat' not in val:
+               val += ' & !(title=Taskhat)'
+            client.set_string(key, val)
+         except Exception, e:
+            print e
+            print 'WARNING: Failed to add exception to compiz focus prevention rules.'
+            print 'Disabling run in background mode.'
+            CONFIG['run_in_background'] = False
       try:
          sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
       except Exception, e:
@@ -177,9 +179,10 @@ class Taskhat:
       ebox3.show()
       scrolled_window.add_with_viewport(ebox3)
 
-      TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE+1, -1))
-      TaskGroup('Today &amp; Tomorrow', self.window, self.persist, (None, 1), events=CONFIG['show_recurring_events'])
-#      TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
+#      TaskGroup('Overdue', self.window, self.persist, (-TaskDate.FUTURE+1, -1))
+      TaskGroup('Today', self.window, self.persist, (None, 0), events=CONFIG['show_recurring_events'])
+      TaskGroup('Tomorrow', self.window, self.persist, (1, 1))
+#      TaskGroup('Today &amp; Tomorrow', self.window, self.persist, (None, 1), events=CONFIG['show_recurring_events'])
       TaskGroup('Next few days', self.window, self.persist, (2, 5))
       TaskGroup('Next week', self.window, self.persist, (6, 14))
       TaskGroup('Future', self.window, self.persist, (8, None))
@@ -233,6 +236,16 @@ class Taskhat:
       entry.grab_focus()
       self.window.connect('notify::style', self.update_group_styles)
       self.window.connect('notify::is-active', self.save_geom)
+ 
+      def callback(data):
+         self.clear_all()
+         self.tasks = filter(lambda t: not t.removed, data.get('tasks', []))
+         for task in self.tasks:
+            self.insert_task(task)
+         self.events = filter(lambda e: not e.deleted, data.get('events', []))
+         self.update_events()
+
+      file_api.watch(callback)
 
    def save_geom(self, *args):
       self.persist.save_geometry(self.window.get_position(), self.window.get_size())

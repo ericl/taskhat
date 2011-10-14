@@ -1,4 +1,5 @@
 import os
+import file_api
 from pickle import loads, dumps
 
 from time import now, get_today
@@ -42,7 +43,13 @@ class Persist:
       swap = self.path + '~'
       backup = self.path + '.backup-%d' % now().weekday()
       with open(swap, 'w') as s:
-         s.write(dumps({'tasks': self.tasks, 'events': self.events, 'day': get_today()}))
+         data = {
+             'tasks': self.tasks,
+             'events': self.events,
+             'day': get_today(),
+         }
+         s.write(dumps(data))
+         file_api.update(data)
          if os.path.exists(self.path):
             os.rename(self.path, backup)
          os.rename(swap, self.path)
@@ -52,7 +59,7 @@ class Persist:
       if diff.days < 0:
          return 'the future'
       elif diff.days == 0:
-         return 'last sync'
+         return 'last restore'
       else:
          return '%d days ago' % diff.days
 
