@@ -7,54 +7,74 @@ updating using Dropbox's mobile app.
 
 from taskgroup import TaskGroup
 from task import Task
-from time import get_today
+from time import get_today, now
 from event import WeeklyRecurringEvent
 from read_dropbox_location import read_dropbox_location
 from threading import Thread
 import os
+import sys
+import inotifyx
 import datetime
 import collections
+import gobject
+
+gobject.threads_init()
+
+# establish file store directory
+try:
+    FILE_DIR = read_dropbox_location()
+except:
+    FILE_DIR = os.path.expanduser('~/Desktop')
+FILE_NAME = 'Tasks'
+FILE_PATH = os.path.join(FILE_DIR, FILE_NAME)
 
 class IOWatcher(Thread):
     def __init__(self):
         super(IOWatcher, self).__init__()
         self.daemon = True
-        self.monitor = True
+        self.last_update = datetime.datetime(1970,1,1)
         self.callbacks = []
+        self.fd = inotifyx.init()
+        self.wd = inotifyx.add_watch(self.fd, FILE_DIR)
+        self.NOTABLE = inotifyx.IN_CLOSE_WRITE | inotifyx.IN_MOVE
 
     def run(self):
         while self.inotifywait():
-            data = poll()
-            for cb in self.callbacks:
-                cb(data)
+            try:
+                data = poll()
+                for cb in self.callbacks:
+                    cb(data)
+            except Exception, e:
+                print "Ignored bad read", e
 
     def inotifywait(self):
         """
         Blocks until file change event happens and
-        self.monitor is True
+        self.last_update is not recent
         """
-        raise NotImplementedError
+        while True:
+            events = inotifyx.get_events(self.fd)
+            if (now() - self.last_update).total_seconds() < 1.0:
+                continue
+            for e in events:
+                sys.stdout.flush()
+                if e.name == FILE_NAME and e.mask & self.NOTABLE:
+                    while inotifyx.get_events(self.fd, 0.5):
+                        pass
+                    return True
 
-    def disable_change_monitoring(self):
-        self.monitor = False
-
-    def enable_change_monitoring(self):
-        self.monitor = True
+    def pause_change_monitoring(self):
+        self.last_update = now()
 
     def add_callback(self, cb):
         self.callbacks.append(cb)
-#        cb(poll()) # TODO enable once class finished
+        try:
+            cb(poll())
+        except Exception, e:
+            print "Error adding", cb, e
 
 _io_watcher = IOWatcher()
 _io_watcher.start()
-
-def get_file_loc():
-    """Returns location of human-readable save file"""
-    try:
-        loc = read_dropbox_location()
-    except:
-        loc = os.path.expanduser('~/Desktop')
-    return os.path.join(loc, 'Tasks')
 
 def update(state):
     """Saves data into human-readable file format"""
@@ -67,9 +87,9 @@ def update(state):
         if not task.removed:
             asn[group.title].append(task)
 
-    _io_watcher.disable_change_monitoring()
+    _io_watcher.pause_change_monitoring()
 
-    with open(get_file_loc(), 'w') as out:
+    with open(FILE_PATH, 'w') as out:
         print >>out, '### Tasks ###'
         print >>out
         for k in asn_keys:
@@ -86,16 +106,19 @@ def update(state):
         print >>out
         print >>out, "# Last updated:", datetime.datetime.today()
 
-    _io_watcher.enable_change_monitoring()
-
 def poll():
-    """Returns state from current file"""
+    """
+    Returns state from current file.
+    Raises if file is malformed.
+    """
 
-    text = open(get_file_loc(), 'r')
+    text = open(FILE_PATH, 'r').read().split('\n')
     tasks = []
     events = []
     parse_out = tasks
     parse_class = Task
+    if text[0] != '### Tasks ###':
+        raise Exception
     for line in text:
         if line.startswith('#'):
             continue
@@ -104,6 +127,8 @@ def poll():
             parse_out = events
         elif line:
             parse_out.append(parse_class.from_human(line))
+    if not tasks:
+        raise Exception
     return {
         'tasks': tasks,
         'events': events,
