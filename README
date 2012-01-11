@@ -1,1 +1,6 @@
-Tasque clone written in pygtk, with emphasis on ease of use. It's also much faster.
+Simple task list, with emphasis on mobility and ease of use.
+
+While my original motivation was to write a zippier Tasque clone, Taskhat now offers features that make it much more useful.
+
+* Intelligently parses input to determine date and priority.
+* Syncs with a text file, so you can edit your tasks remotely via a ssh session or Dropbox.
