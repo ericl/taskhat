@@ -94,6 +94,8 @@ def update(state):
 
     with open(FILE_PATH, 'w') as out:
         print >>out, '### Tasks ###'
+        print >>out, '# TYPE NEW TASKS HERE:'
+        print >>out
         print >>out
         for k in asn_keys:
             print >>out, '#', k

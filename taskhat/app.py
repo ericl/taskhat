@@ -60,8 +60,7 @@ def run_app():
          except Exception, e:
             print e
             print 'WARNING: Failed to add exception to compiz focus prevention rules.'
-            print 'Disabling run in background mode.'
-            CONFIG['run_in_background'] = False
+            print 'You should consider disabling run in background mode.'
       try:
          sessionbus.get_object('org.riclian.Taskhat', '/Taskhat').Present()
       except Exception, e:
@@ -240,13 +239,13 @@ class Taskhat:
       def callback(data):
          self.clear_all()
          self.tasks = filter(lambda t: not t.removed, data.get('tasks', []))
-         self.persist.tasks = self.tasks
          for task in self.tasks:
             self.insert_task(task)
          self.events = filter(lambda e: not e.deleted, data.get('events', []))
+         self.persist.tasks = self.tasks
          self.persist.events = self.events
+         self.persist.sync()
          self.update_events()
-         file_api.update(data)
 
       file_api.watch(callback)
 
