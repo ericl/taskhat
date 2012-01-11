@@ -44,6 +44,8 @@ class TaskDate:
          return '%s/%s - Today' % (self.date.month, self.date.day)
       elif x == 'Tomorrow':
          return '%s/%s - Tomorrow' % (self.date.month, self.date.day)
+      if self.date.year != get_today().year:
+         return '%s/%s/%s' % (self.date.month, self.date.day, self.date.year)
       return '%s/%s - %s<span size="0">%s</span>' % (self.date.month, self.date.day, x[:3], x[3:])
 
    def hname(self):
@@ -58,25 +60,37 @@ class TaskDate:
 
    @staticmethod
    def from_human(text):
-      from parse import parse_date
       text = text.strip().lower()
       try:
          if 'future' in text:
             return TaskDate(TaskDate.FUTURE)
          elif 'soon' in text:
             return TaskDate(TaskDate.SOON)
+         from parse import parse_date
+         if ' - ' in text:
+            text = text.split('-')[0]
          return parse_date(text)[2]
       except:
          return TaskDate()
 
-   def __str__(self):
+   def __str__(self, show_year=False):
+      """
+      This must conform to TaskDate.markup() format in order for
+      the popup dialog to correctly center on this text
+      """
       if self.date is None:
          return 'No Date'
       elif self.date == TaskDate.FUTURE:
          return 'In the Future'
       elif self.date == TaskDate.SOON:
          return 'Sometime Soon'
-      return '%s/%s - %s' % (self.date.month, self.date.day, self.hname())
+      if show_year:
+         # case not conforming to TaskDate.markup
+         return '%s/%s/%s - %s'\
+            % (self.date.month, self.date.day, self.date.year, self.hname())
+      else:
+         return '%s/%s - %s'\
+            % (self.date.month, self.date.day, self.hname())
 
 class Priority:
    def __init__(self, num, name):
@@ -103,7 +117,7 @@ class Task:
       self.prefix = ''
 
    def to_human(self):
-      return '%s | %s | %s' % (self.prio, self.text, self.date)
+      return '%s | %s | %s' % (self.prio, self.text, self.date.__str__(True))
 
    @staticmethod
    def from_human(text):

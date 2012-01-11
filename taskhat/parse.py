@@ -1,3 +1,5 @@
+import re
+
 from task import TaskDate, Task
 
 from time import now, make_time
@@ -14,7 +16,11 @@ def parse_date(text):
       return '<?>', text, date
    x = x.lower()
    found = True
-   if '/' in x:
+   if re.match(r'\d{1,2}/\d{1,2}/\d{4}', x):
+      out = x
+      x = map(int, x.split('/'))
+      date = TaskDate(date=make_time(x[2], x[0], x[1]))
+   elif '/' in x:
       today = now()
       try:
          x = x.split('/')
