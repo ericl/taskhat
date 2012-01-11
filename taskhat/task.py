@@ -56,6 +56,19 @@ class TaskDate:
          return 'In 1 Week'
       return self.date.strftime('%A')
 
+   @staticmethod
+   def from_human(text):
+      from parse import parse_date
+      text = text.strip().lower()
+      try:
+         if 'future' in text:
+            return TaskDate(TaskDate.FUTURE)
+         elif 'soon' in text:
+            return TaskDate(TaskDate.SOON)
+         return parse_date(text)[2]
+      except:
+         return TaskDate()
+
    def __str__(self):
       if self.date is None:
          return 'No Date'
@@ -94,9 +107,22 @@ class Task:
 
    @staticmethod
    def from_human(text):
-      raise NotImplementedError
+      try:
+         prio, text, date = text.split('|')
+         text = text.strip()
+         prio = Task.prio_match(prio.strip())
+         date = TaskDate.from_human(date)
+      except:
+         try:
+            import parse
+            return parse.task_from_string(text)
+         except:
+            date = TaskDate()
+            prio = Task.PRIORITY_LOW
+      return Task(text, date, prio)
 
-   def prio_match(self, text):
+   @classmethod
+   def prio_match(cls, text):
       if text == Task.PRIORITY_LOW.name:
          return Task.PRIORITY_LOW
       if text == Task.PRIORITY_MEDIUM.name:
@@ -125,5 +151,8 @@ class Task:
 
    def __str__(self):
       return self.text
+
+   def __repr__(self):
+      return 'Task(%s, %s, %s)' % (self.prio, self.text, self.date)
 
 # vim: et sw=3

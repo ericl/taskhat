@@ -25,7 +25,7 @@ try:
     FILE_DIR = read_dropbox_location()
 except:
     FILE_DIR = os.path.expanduser('~/Desktop')
-FILE_NAME = 'Tasks'
+FILE_NAME = 'Tasks.txt'
 FILE_PATH = os.path.join(FILE_DIR, FILE_NAME)
 
 class IOWatcher(Thread):
@@ -68,8 +68,9 @@ class IOWatcher(Thread):
 
     def add_callback(self, cb):
         self.callbacks.append(cb)
+        data = poll()
         try:
-            cb(poll())
+            cb(data)
         except Exception, e:
             print "Error adding", cb, e
 
@@ -78,6 +79,8 @@ _io_watcher.start()
 
 def update(state):
     """Saves data into human-readable file format"""
+
+    print "Writing state to file"
 
     asn = collections.defaultdict(list)
     asn_keys = [g.title for g in TaskGroup.groups]
@@ -112,6 +115,7 @@ def poll():
     Raises if file is malformed.
     """
 
+    print "Reading state from file"
     text = open(FILE_PATH, 'r').read().split('\n')
     tasks = []
     events = []
@@ -120,11 +124,11 @@ def poll():
     if text[0] != '### Tasks ###':
         raise Exception
     for line in text:
-        if line.startswith('#'):
-            continue
-        elif line.startswith('### Recurring Events ###'):
+        if line.startswith('### Recurring Events ###'):
             parse_class = WeeklyRecurringEvent
             parse_out = events
+        elif line.startswith('#'):
+            continue
         elif line:
             parse_out.append(parse_class.from_human(line))
     if not tasks:

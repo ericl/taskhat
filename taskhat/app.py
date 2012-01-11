@@ -240,10 +240,13 @@ class Taskhat:
       def callback(data):
          self.clear_all()
          self.tasks = filter(lambda t: not t.removed, data.get('tasks', []))
+         self.persist.tasks = self.tasks
          for task in self.tasks:
             self.insert_task(task)
          self.events = filter(lambda e: not e.deleted, data.get('events', []))
+         self.persist.events = self.events
          self.update_events()
+         file_api.update(data)
 
       file_api.watch(callback)
 
@@ -256,7 +259,7 @@ class Taskhat:
 
    def update_events(self):
       for g in TaskGroup.groups:
-         g.update()
+         g.update(True)
 
    def event_editor(self, *args):
       EventEditor(self.window, self.persist, self).run()

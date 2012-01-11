@@ -1,4 +1,5 @@
 from time import now, make_timedelta
+import re
 
 from taskgroup import escape
 
@@ -46,7 +47,15 @@ class WeeklyRecurringEvent(Event):
 
    @staticmethod
    def from_human(text):
-      raise NotImplementedError
+      try:
+         text, days, tdelta = text.split('|')
+         text = text.strip()
+         days = sorted(set(map(int, re.findall('[0-6]', days))))
+         tdelta = WeeklyRecurringEvent.parse_timestring(tdelta)
+      except:
+         days = range(7)
+         tdelta = WeeklyRecurringEvent.parse_timestring('')
+      return WeeklyRecurringEvent(text, days, tdelta)
 
    @classmethod
    def parse_datestring(cls, datestring):
@@ -134,5 +143,8 @@ class WeeklyRecurringEvent(Event):
       if self.tdelta.seconds:
          return '%s<i> - %s</i>' % (escape(self.text), self.get_timestring())
       return '%s' % (self.text)
+
+   def __repr__(self):
+      return 'WeeklyRecurringEvent(%s, %s, %s)' % (self.text, self.days, self.tdelta)
 
 # vim: et sw=3
