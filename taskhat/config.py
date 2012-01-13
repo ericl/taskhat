@@ -1,6 +1,7 @@
 from task import Task, TaskDate
 
 from time import days_until_this_weekday
+import os
 
 # run_in_background: don't quit with window close
 #   - enables fast startup
@@ -8,6 +9,14 @@ from time import days_until_this_weekday
 # show_recurring_events: show daily schedule and such in main window
 CONFIG = {'run_in_background': True,
           'show_recurring_events': True}
+
+configfile = os.path.expanduser('~/.taskhat')
+if os.path.exists(configfile):
+    try:
+        CONFIG.update(eval(open(configfile).read()))
+        print "Read config from file:", CONFIG
+    except Exception, e:
+        print "Error reading config:", e
 
 # starts_with_text: [status text, f_date, strip_date_from_end]
 DATE_MATCH_DICT = {

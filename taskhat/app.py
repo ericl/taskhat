@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import pygtk
+import gobject
 pygtk.require('2.0')
 
+import datetime
 import sys
 import traceback
 import gtk
@@ -10,6 +12,7 @@ import pango
 
 from config import CONFIG
 
+from time import now
 from task import Task
 from persist import Persist
 from event_editor import EventEditor
@@ -236,18 +239,31 @@ class Taskhat:
       self.window.connect('notify::style', self.update_group_styles)
       self.window.connect('notify::is-active', self.save_geom)
  
-      def callback(data):
+      def _callback(data):
          self.clear_all()
-         self.tasks = filter(lambda t: not t.removed, data.get('tasks', []))
-         for task in self.tasks:
+         new = filter(lambda t: not t.removed, data.get('tasks', []))
+         taskhat_write = data.get('last_taskhat_update', now())
+         taskhat_write += datetime.timedelta(seconds=1)
+         closed = set()
+         for task in new:
+            closed.add(repr(task))
+         for task in self.persist.tasks:
+            if task.last_updated > taskhat_write and repr(task) not in closed:
+               new.append(task)
+         self.persist.tasks = new
+         for task in new:
             self.insert_task(task)
-         self.events = filter(lambda e: not e.deleted, data.get('events', []))
-         self.persist.tasks = self.tasks
-         self.persist.events = self.events
+            task.last_updated = taskhat_write
+         self.persist.events =\
+            filter(lambda e: not e.deleted, data.get('events', []))
          self.persist.sync()
          self.update_events()
+         return False
 
-      file_api.watch(callback)
+      def callback_gobject_wrapper(data):
+         gobject.timeout_add(0, lambda: _callback(data))
+
+      file_api.watch(callback_gobject_wrapper)
 
    def save_geom(self, *args):
       self.persist.save_geometry(self.window.get_position(), self.window.get_size())

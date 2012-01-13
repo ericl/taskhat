@@ -1,4 +1,4 @@
-from time import make_timedelta, get_today
+from time import make_timedelta, get_today, now
 
 class TaskDate:
    FUTURE = 999999
@@ -115,6 +115,7 @@ class Task:
       self.prio = prio
       self.removed = False
       self.prefix = ''
+      self.last_updated = now()
 
    def to_human(self):
       return '%s | %s | %s' % (self.prio, self.text, self.date.__str__(True))

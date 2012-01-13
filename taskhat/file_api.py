@@ -10,6 +10,7 @@ from task import Task
 from time import get_today, now
 from event import WeeklyRecurringEvent
 from read_dropbox_location import read_dropbox_location
+from config import CONFIG
 from threading import Thread
 import os
 import sys
@@ -22,7 +23,10 @@ gobject.threads_init()
 
 # establish file store directory
 try:
-    FILE_DIR = read_dropbox_location()
+    if 'FILE_DIR' in CONFIG:
+        FILE_DIR = CONFIG['FILE_DIR']
+    else:
+        FILE_DIR = read_dropbox_location()
 except:
     FILE_DIR = os.path.expanduser('~/Desktop')
 FILE_NAME = 'Tasks.txt'
@@ -68,11 +72,11 @@ class IOWatcher(Thread):
 
     def add_callback(self, cb):
         self.callbacks.append(cb)
-        data = poll()
         try:
+            data = poll()
             cb(data)
         except Exception, e:
-            print "Error adding", cb, e
+            print "E:", e
 
 _io_watcher = IOWatcher()
 _io_watcher.start()
@@ -80,7 +84,7 @@ _io_watcher.start()
 def update(state):
     """Saves data into human-readable file format"""
 
-    print "Writing state to file"
+    print "Writing state to", FILE_PATH
 
     asn = collections.defaultdict(list)
     asn_keys = [g.title for g in TaskGroup.groups]
@@ -109,7 +113,17 @@ def update(state):
             if not e.deleted and e.text:
                 print >>out, e.to_human()
         print >>out
-        print >>out, "# Last updated:", datetime.datetime.today()
+        print >>out, "# Last updated:", datetime.datetime.today().ctime()
+
+def cleanup():
+    for name in os.listdir(FILE_DIR):
+        if 'conflicted copy' in name:
+            f = os.path.join(FILE_DIR, name)
+            try:
+                os.unlink(f)
+                print 'Deleted', f
+            except Exception, e:
+                print e
 
 def poll():
     """
@@ -117,12 +131,15 @@ def poll():
     Raises if file is malformed.
     """
 
-    print "Reading state from file"
+    cleanup()
+    print "Reading state from", FILE_PATH
     text = open(FILE_PATH, 'r').read().split('\n')
+    text = filter(lambda x: x, map(str.strip, text))
     tasks = []
     events = []
     parse_out = tasks
     parse_class = Task
+    last_updated = None
     if text[0] != '### Tasks ###':
         raise Exception
     for line in text:
@@ -130,15 +147,22 @@ def poll():
             parse_class = WeeklyRecurringEvent
             parse_out = events
         elif line.startswith('#'):
+            if 'Last updated:' in line:
+                try:
+                    last_updated = datetime.datetime.strptime(line[16:],
+                        "%a %b %d %H:%M:%S %Y")
+                except ValueError, ve:
+                    print ve
             continue
         elif line:
             parse_out.append(parse_class.from_human(line))
-    if not tasks:
+    if not tasks or not last_updated:
         raise Exception
     return {
         'tasks': tasks,
         'events': events,
         'day': get_today(),
+        'last_taskhat_update': last_updated,
     }
 
 def watch(callback):
