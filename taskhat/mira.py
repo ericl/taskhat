@@ -51,9 +51,20 @@ class MiraClassifier(object):
             vectors[l] = self.weights[l] * datum
         return vectors.argMax()
 
+    @benchmark
     def prune(self):
-        # TODO reduce dimensionality of weight vectors
-        pass
+        lower_limit = 200
+        upper_limit = 500
+        for label, lw in self.weights.iteritems():
+            if len(lw) < upper_limit:
+                continue
+            q = []
+            for ngram, weight in lw.iteritems():
+                q.append((weight, ngram))
+            q.sort(key=lambda (w, ng): abs(w))
+            w = self.weights[label] = util.Counter()
+            for weight, ngram in q[-lower_limit:]:
+                w[ngram] = weight
 
     def save(self):
         def callback():
@@ -70,7 +81,9 @@ class MiraClassifier(object):
 
 if __name__ == '__main__':
     classifier = MiraClassifier()
+    total, ok = 0.0, 0.0
     while True:
+        print
         print "Enter a training line:",
         try:
             line = raw_input()
@@ -78,14 +91,15 @@ if __name__ == '__main__':
             break
         ngrams = ngen(line)
         label = classifier.classify(ngrams)
-        print "Enter the right label [guessed %s]:" % label,
+        print "---> the right label [guessed %s]:" % label,
         line = raw_input()
         if line:
             classifier.update(line, ngrams)
         else:
-            classifier.update(label, ngrams)
+            ok += 1
+        total += 1
         classifier.report()
-    print
+        print "cumulative accuracy:", ok/total
     for k, weights in classifier.weights.items():
         if k is None:
             continue
