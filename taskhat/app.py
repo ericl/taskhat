@@ -119,7 +119,7 @@ class Taskhat:
       def documentation(*args):
          dialog = gtk.MessageDialog(parent=self.window, flags=gtk.DIALOG_MODAL)
          dialog.set_title('User Information')
-         dialog.set_markup('A priority of <b>%s</b> denotes administrivia.\nA priority of <b>%s</b> denotes an important task.\nA priority of <b>%s</b> is for normal tasks.\nA priority of <b>%s</b> denotes a low priority task.\n\nSee <b>taskhat/config.py</b> for information on the default task classification and date matching keywords.' % (Task.PRIORITY_ADMIN.name, Task.PRIORITY_HIGH.name, Task.PRIORITY_MEDIUM.name, Task.PRIORITY_LOW.name))
+         dialog.set_markup('A priority of <b>%s</b> denotes administrivia.\nA priority of <b>%s</b> denotes an important task.\nA priority of <b>%s</b> is for normal tasks.\nA priority of <b>%s</b> denotes a low priority task.\n\nOver time, Taskhat will learn how you like to classify your tasks.\n\nSee <b>taskhat/config.py</b> for more options.' % (Task.PRIORITY_ADMIN.name, Task.PRIORITY_HIGH.name, Task.PRIORITY_MEDIUM.name, Task.PRIORITY_LOW.name))
          button = gtk.Button(stock=gtk.STOCK_CLOSE)
          def dest(*args):
             dialog.destroy()

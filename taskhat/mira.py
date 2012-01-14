@@ -7,11 +7,15 @@ from collections import defaultdict
 from pickle import loads, dumps
 from ngrams import ngen
 
+DO_BENCH = False
+
 def benchmark(f):
     def g(*args):
         start = time.time()
         ans = f(*args)
-        print 1000*(time.time() - start), "ms for", str(f).split()[1] + "()"
+        dt = 1000*(time.time() - start)
+        if dt > 10:
+            print "*slow*", dt, "ms for", str(f).split()[1] + "()"
         return ans
     return g
 
@@ -30,7 +34,7 @@ class MiraClassifier(object):
                print e
 
     @benchmark
-    def update(self, correct_label, datum):
+    def update(self, correct_label, datum, source=None):
         C = 0.003
         chosen_label = self.classify(datum)
         if chosen_label != correct_label:
@@ -43,6 +47,9 @@ class MiraClassifier(object):
                 self.weights[chosen_label] -= scaled_datum
             self.weights[correct_label] += scaled_datum
         self.prune()
+        if self.path and source:
+            with open(self.path + '.log', 'a') as f:
+                print >>f, correct_label, source
 
     @benchmark
     def classify(self, datum):

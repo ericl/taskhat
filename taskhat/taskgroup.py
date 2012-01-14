@@ -300,7 +300,7 @@ class TaskGroup(gtk.VBox):
       self.add(task)
       self.persist.sync()
       mc = persist.get_classifier('prio')
-      mc.update(task.prio, ngen(task.text))
+      mc.update(task.prio, ngen(task.text), task.text)
       mc.save()
 
    def date_popup(self, task, finish):
