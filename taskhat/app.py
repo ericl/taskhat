@@ -12,7 +12,7 @@ import pango
 
 from config import CONFIG
 
-from time import now
+from utime import now
 from task import Task
 from persist import Persist
 from event_editor import EventEditor
@@ -20,6 +20,7 @@ from restore_from_backup import RestoreFromBackup
 from taskgroup import TaskGroup, escape
 from parse import label_from_string, task_from_string
 import file_api
+import mira
 
 DBUS_OK = True
 
@@ -234,6 +235,7 @@ class Taskhat:
 
       self.persist.restore(self.insert_task, self.update_events)
       self.persist.restore_geometry(self.window)
+      mira.load_classifiers()
       self.window.show()
       entry.grab_focus()
       self.window.connect('notify::style', self.update_group_styles)
@@ -261,7 +263,7 @@ class Taskhat:
          return False
 
       def callback_gobject_wrapper(data):
-         gobject.timeout_add(0, lambda: _callback(data))
+         gobject.idle_add(lambda: _callback(data))
 
       file_api.watch(callback_gobject_wrapper)
 

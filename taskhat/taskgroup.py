@@ -2,8 +2,10 @@ import gtk
 import gobject
 import pango
 
-from time import make_time, now
+from utime import make_time, now
 
+from ngrams import ngen
+import mira
 from task import Task, TaskDate
 
 SPACER = '<span size="900">\n\n</span>'
@@ -297,6 +299,9 @@ class TaskGroup(gtk.VBox):
       self.remove(miter)
       self.add(task)
       self.persist.sync()
+      mc = mira.get_classifier('prio')
+      mc.update(task.prio, ngen(task.text))
+      mc.save()
 
    def date_popup(self, task, finish):
       if TaskGroup.popup:

@@ -1,4 +1,4 @@
-from time import now, make_timedelta
+from utime import now, make_timedelta
 import re
 
 from taskgroup import escape

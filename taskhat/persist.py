@@ -2,7 +2,7 @@ import os
 import file_api
 from pickle import loads, dumps
 
-from time import now, get_today
+from utime import now, get_today
 from event import event_cmp
 
 class Persist:

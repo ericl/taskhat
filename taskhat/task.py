@@ -1,4 +1,4 @@
-from time import make_timedelta, get_today, now
+from utime import make_timedelta, get_today, now
 
 class TaskDate:
    FUTURE = 999999
@@ -100,8 +100,11 @@ class Priority:
    def __str__(self):
       return self.name
 
-   def __equal__(self, other):
+   def __eq__(self, other):
       return self.num == other.num
+
+   def __hash__(self):
+      return self.num
 
 class Task:
    PRIORITY_ADMIN = Priority(0, '\xe2\x87\xa1')

@@ -7,7 +7,7 @@ updating using Dropbox's mobile app.
 
 from taskgroup import TaskGroup
 from task import Task
-from time import get_today, now
+from utime import get_today, now
 from event import WeeklyRecurringEvent
 from read_dropbox_location import read_dropbox_location
 from config import CONFIG
