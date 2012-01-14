@@ -20,7 +20,7 @@ from restore_from_backup import RestoreFromBackup
 from taskgroup import TaskGroup, escape
 from parse import label_from_string, task_from_string
 import file_api
-import mira
+import persist
 
 DBUS_OK = True
 
@@ -235,7 +235,7 @@ class Taskhat:
 
       self.persist.restore(self.insert_task, self.update_events)
       self.persist.restore_geometry(self.window)
-      mira.load_classifiers()
+      persist.load_classifiers()
       self.window.show()
       entry.grab_focus()
       self.window.connect('notify::style', self.update_group_styles)

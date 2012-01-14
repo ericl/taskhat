@@ -3,7 +3,25 @@ import file_api
 from pickle import loads, dumps
 
 from utime import now, get_today
+from mira import MiraClassifier
+from task import Task
 from event import event_cmp
+
+classifiers = {}
+def get_classifier(key):
+    global classifiers
+    if not classifiers:
+        load_classifiers()
+    return classifiers[key]
+
+def load_classifiers():
+  path = os.environ['HOME'] + '/.taskhat-mira-prio'
+  classifiers['prio'] = MiraClassifier([
+      Task.PRIORITY_HIGH,
+      Task.PRIORITY_MEDIUM,
+      Task.PRIORITY_LOW,
+      Task.PRIORITY_ADMIN,
+  ], path)
 
 class Persist:
    def __init__(self, name):

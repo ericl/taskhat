@@ -3,27 +3,9 @@
 import time
 import util
 import gobject
-import os
 from collections import defaultdict
 from pickle import loads, dumps
-from task import Task
 from ngrams import ngen
-
-classifiers = {}
-def get_classifier(key):
-    global classifiers
-    if not classifiers:
-        load_classifiers()
-    return classifiers[key]
-
-def load_classifiers():
-  path = os.environ['HOME'] + '/.taskhat-mira-prio'
-  classifiers['prio'] = MiraClassifier([
-      Task.PRIORITY_HIGH,
-      Task.PRIORITY_MEDIUM,
-      Task.PRIORITY_LOW,
-      Task.PRIORITY_ADMIN,
-  ], path)
 
 def benchmark(f):
     def g(*args):

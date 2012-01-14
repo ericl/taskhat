@@ -5,8 +5,8 @@ import pango
 from utime import make_time, now
 
 from ngrams import ngen
-import mira
 from task import Task, TaskDate
+import persist
 
 SPACER = '<span size="900">\n\n</span>'
 SPACER_NO_NEWLINE = '<span size="000">\n </span>'
@@ -299,7 +299,7 @@ class TaskGroup(gtk.VBox):
       self.remove(miter)
       self.add(task)
       self.persist.sync()
-      mc = mira.get_classifier('prio')
+      mc = persist.get_classifier('prio')
       mc.update(task.prio, ngen(task.text))
       mc.save()
 

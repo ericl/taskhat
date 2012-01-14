@@ -4,7 +4,7 @@ from task import TaskDate, Task
 from utime import now, make_time
 from config import DATE_MATCH_DICT
 from ngrams import ngen
-import mira
+import persist
 
 def parse_date(text):
    x = None
@@ -52,15 +52,15 @@ def parse_date(text):
 
 def label_from_string(text):
    text = text.strip()
-   prio = mira.get_classifier('prio').classify(ngen(text))
-   ttype = {
-       Task.PRIORITY_HIGH: 'Important task',
-       Task.PRIORITY_MEDIUM: 'Assignment',
-       Task.PRIORITY_LOW: 'Idle task',
-       Task.PRIORITY_ADMIN: 'Administrivia',
-   }[prio] + ' due'
+   prio = persist.get_classifier('prio').classify(ngen(text))
    text = ' ' + text + ' '
    out, text, date = parse_date(text)
+   ttype = {
+       Task.PRIORITY_HIGH: 'Important task due',
+       Task.PRIORITY_MEDIUM: 'Assignment due',
+       Task.PRIORITY_LOW: 'Task for',
+       Task.PRIORITY_ADMIN: 'Appointment on',
+   }[prio]
    return (" %s %s" % (ttype, out)), text.strip(), date, prio
 
 def task_from_string(text):
