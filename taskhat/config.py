@@ -8,7 +8,7 @@ import os
 #   - may not play nice with wm focus prevention
 # show_recurring_events: show daily schedule and such in main window
 CONFIG = {'run_in_background': True,
-          'show_recurring_events': True}
+          'show_recurring_events': False}
 
 configfile = os.path.expanduser('~/.taskhat')
 if os.path.exists(configfile):
